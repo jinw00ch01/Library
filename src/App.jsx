@@ -30,7 +30,7 @@ function App() {
       </StyledContent>
 
       <StyledFooter>
-        도서관 관리 시스템 ©{new Date().getFullYear()} Created by team 1
+        도서관 관리 시스템 ©{new Date().getFullYear()} Created by TEAM1
       </StyledFooter>
     </StyledLayout>
   );
