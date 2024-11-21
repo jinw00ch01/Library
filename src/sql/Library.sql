@@ -8,7 +8,7 @@
 	`Book_ISBN`	CHAR(17)	NULL,
 	`Book_pages`	INT	NULL,
 	`Book_published_date`	DATE	NULL,
-	`Book_description`	TEXT	NULL,
+	`Book_description`	VARCHAR(255)	NULL,
 	`Book_state`	ENUM('대출중','예약중','연체중','대출가능')	NULL
 );
 
@@ -30,7 +30,9 @@ CREATE TABLE `Customer` (
 	`Customer_address`	VARCHAR(255)	NULL,
 	`Customer_birthdate`	DATE	NULL,
 	`Customer_membership_date`	DATE	NULL,
-	`Customer_preferences`	VARCHAR(255)	NULL
+	`Customer_preferences`	VARCHAR(255)	NULL,
+	`Customer_InfoID`	VARCHAR(20)	NULL,
+	`Customer_InfoPASSWORD`	VARCHAR(255)	NULL
 );
 
 CREATE TABLE`Cust_Cont` (
@@ -126,6 +128,8 @@ CREATE TABLE `Staff` (
 	`staff_classification`	ENUM('인턴','사원','대리','과장','부장','사장')	NULL,
 	`staff_email`	VARCHAR(255)	NULL,
 	`staff_number`	CHAR(20)	NULL,
+	`staff_InfoID`	VARCHAR(20)	NULL,
+	`staff_InfoPASSWORD`	VARCHAR(255)	NULL,
 	`department_ID`	INT	NOT NULL
 );
 
