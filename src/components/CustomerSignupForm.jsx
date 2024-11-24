@@ -1,21 +1,42 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Form, Input, Select, DatePicker, Button, message } from 'antd';
 import styled from 'styled-components';
 import { authService } from '../services/api';
 
-const SignupForm = ({ onClose }) => {
+const CustomerSignupForm = ({ onClose }) => {
   const [form] = Form.useForm();
 
   const onFinish = async (values) => {
     try {
-      await authService.signup({
+      console.log('Form values:', values);
+      
+      const signupData = {
         ...values,
-        birthdate: values.birthdate.format('YYYY-MM-DD')
-      });
+        birthdate: values.birthdate ? values.birthdate.format('YYYY-MM-DD') : null,
+        preferences: values.preferences || null,
+        address: values.address || null
+      };
+
+      console.log('Sending data:', signupData);
+      
+      const response = await authService.customerSignup(signupData);
+      console.log('Server response:', response);
+      
       message.success('회원가입이 완료되었습니다!');
       onClose();
     } catch (error) {
-      message.error('회원가입 중 오류가 발생했습니다.');
+      console.error('Signup error details:', {
+        response: error.response?.data,
+        status: error.response?.status,
+        message: error.message
+      });
+
+      const errorMessage = 
+        error.response?.data?.details || 
+        error.response?.data?.error || 
+        '회원가입 중 오류가 발생했습니다.';
+        
+      message.error(errorMessage);
     }
   };
 
@@ -66,27 +87,19 @@ const SignupForm = ({ onClose }) => {
             <Select.Option value="학생">학생</Select.Option>
             <Select.Option value="교수">교수</Select.Option>
             <Select.Option value="외부인">외부인</Select.Option>
+            <Select.Option value="일반">일반</Select.Option>
           </Select>
         </Form.Item>
 
-        <Form.Item
-          name="address"
-          label="주소"
-        >
+        <Form.Item name="address" label="주소">
           <Input />
         </Form.Item>
 
-        <Form.Item
-          name="birthdate"
-          label="생년월일"
-        >
+        <Form.Item name="birthdate" label="생년월일">
           <DatePicker style={{ width: '100%' }} />
         </Form.Item>
 
-        <Form.Item
-          name="preferences"
-          label="선호 장르"
-        >
+        <Form.Item name="preferences" label="선호 장르">
           <Input />
         </Form.Item>
 
@@ -102,10 +115,6 @@ const SignupForm = ({ onClose }) => {
 
 const FormContainer = styled.div`
   padding: 24px;
-  background: white;
-  border-radius: 8px;
-  max-width: 400px;
-  margin: 0 auto;
 `;
 
-export default SignupForm; 
+export default CustomerSignupForm; 
