@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Layout, Menu, Button, Modal } from 'antd';
-import { BookOutlined, UserOutlined, HomeOutlined } from '@ant-design/icons';
+import { BookOutlined, UserOutlined, HomeOutlined, FormOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
 import CustomerSignupForm from './components/CustomerSignupForm';
 import StaffSignupForm from './components/StaffSignupForm';
@@ -10,6 +10,14 @@ import StaffLoginForm from './components/StaffLoginForm';
 import LoginTypeSelection from './components/LoginTypeSelection';
 import { authService } from './services/api';
 import UserInfoModal from './components/UserInfoModal';
+import InfoRegistrationSelection from './components/InfoRegistrationSelection';
+import DepartmentRegistrationForm from './components/DepartmentRegistrationForm';
+import BookRegistrationForm from './components/BookRegistrationForm';
+import ReturnLoRegistrationForm from './components/ReturnLoRegistrationForm';
+import CooperationRegistrationForm from './components/CooperationRegistrationForm';
+import ContentsRegistrationForm from './components/ContentsRegistrationForm';
+import MediaRegistrationForm from './components/MediaRegistrationForm';
+import BookManagement from './components/BookManagement';
 
 const { Header, Content, Footer } = Layout;
 
@@ -73,6 +81,9 @@ const App = () => {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
   const [userType, setUserType] = useState(localStorage.getItem('userType'));
   const [showUserInfo, setShowUserInfo] = useState(false);
+  const [isInfoRegVisible, setIsInfoRegVisible] = useState(false);
+  const [infoRegType, setInfoRegType] = useState(null);
+  const [isBookManageVisible, setIsBookManageVisible] = useState(false);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
@@ -115,7 +126,43 @@ const App = () => {
     setUserType(null);
   };
 
-  const menuItems = [
+  const handleMenuClick = ({ key }) => {
+    if (key === '2' && user && userType === 'staff') {
+      setIsBookManageVisible(true);
+    } else if (key === '3' && user && userType === 'staff') {
+      setIsInfoRegVisible(true);
+    }
+  };
+
+  const handleInfoRegClose = () => {
+    setIsInfoRegVisible(false);
+    setInfoRegType(null);
+  };
+
+  const handleInfoRegTypeSelect = (type) => {
+    setInfoRegType(type);
+  };
+
+  const renderInfoRegForm = () => {
+    switch (infoRegType) {
+      case 'department':
+        return <DepartmentRegistrationForm onClose={handleInfoRegClose} />;
+      case 'book':
+        return <BookRegistrationForm onClose={handleInfoRegClose} />;
+      case 'returnLo':
+        return <ReturnLoRegistrationForm onClose={handleInfoRegClose} />;
+      case 'supply':
+        return <CooperationRegistrationForm onClose={handleInfoRegClose} />;
+      case 'contents':
+        return <ContentsRegistrationForm onClose={handleInfoRegClose} staffId={user?.id} />;
+      case 'media':
+        return <MediaRegistrationForm onClose={handleInfoRegClose} staffId={user?.id} />;
+      default:
+        return <InfoRegistrationSelection onSelect={handleInfoRegTypeSelect} />;
+    }
+  };
+
+  const menuItems = user && userType === 'staff' ? [
     {
       key: '1',
       icon: <HomeOutlined />,
@@ -124,12 +171,18 @@ const App = () => {
     {
       key: '2',
       icon: <BookOutlined />,
-      label: '도서 목록'
+      label: '도서 관리'
     },
     {
       key: '3',
-      icon: <UserOutlined />,
-      label: '회원 관리'
+      icon: <FormOutlined />,
+      label: '정보 등록'
+    }
+  ] : [
+    {
+      key: '1',
+      icon: <HomeOutlined />,
+      label: '홈'
     }
   ];
 
@@ -137,7 +190,7 @@ const App = () => {
     <StyledLayout>
       <StyledHeader>
         <Logo>도서관 관리 시스템</Logo>
-        <StyledMenu mode="horizontal" defaultSelectedKeys={['1']} items={menuItems} />
+        <StyledMenu mode="horizontal" defaultSelectedKeys={['1']} items={menuItems} onClick={handleMenuClick} />
         <ButtonGroup>
           {user ? (
             <>
@@ -208,7 +261,28 @@ const App = () => {
         onClose={() => setShowUserInfo(false)}
         userType={userType}
         userId={user?.id}
+        onLogout={handleLogout}
       />
+
+      <Modal
+        title={infoRegType ? getModalTitle(infoRegType) : "정보 등록"}
+        open={isInfoRegVisible}
+        onCancel={handleInfoRegClose}
+        footer={null}
+        width={800}
+      >
+        {renderInfoRegForm()}
+      </Modal>
+
+      <Modal
+        title="도서 관리"
+        open={isBookManageVisible}
+        onCancel={() => setIsBookManageVisible(false)}
+        footer={null}
+        width={1000}
+      >
+        <BookManagement />
+      </Modal>
 
       <StyledFooter>
         도서관 관리 시스템 ©{new Date().getFullYear()} Created by TEAM1
@@ -230,5 +304,17 @@ const ButtonGroup = styled.div`
 `;
 
 const LoginButton = styled(Button)``;
+
+const getModalTitle = (type) => {
+  const titles = {
+    department: '신규 부서 등록',
+    book: '신규 도서 등록',
+    returnLo: '신규 반납 장소 등록',
+    supply: '신규 공급업체 등록',
+    contents: '신규 콘텐츠 등록',
+    media: '신규 영상 자료 등록'
+  };
+  return titles[type] || '정보 등록';
+};
 
 export default App;

@@ -29,3 +29,5 @@ ALTER TABLE 테이블명 MODIFY COLUMN 속성명 타입(타입값);
 `department_ID`	INT	NOT NULL AUTO_INCREMENT
 
 `staff_classification`	VARCHAR(10)	NULL
+
+DESC `return`;

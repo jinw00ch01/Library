@@ -600,6 +600,95 @@ app.post('/api/media', async (req, res) => {
   }
 });
 
+// 모든 도서의 간략 정보 조회 API
+app.get('/api/books/summary', async (req, res) => {
+  try {
+    const query = `
+      SELECT Book_ID, Book_name, Book_state
+      FROM Book
+    `;
+    const [rows] = await db.query(query);
+    res.json({ success: true, books: rows });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 특정 도서의 상세 정보 조회 API
+app.get('/api/books/:id', async (req, res) => {
+  try {
+    const bookId = req.params.id;
+    const query = `
+      SELECT *
+      FROM Book
+      WHERE Book_ID = ?
+    `;
+    const [rows] = await db.query(query, [bookId]);
+    
+    if (rows.length === 0) {
+      return res.status(404).json({ error: '도서를 찾을 수 없습니다.' });
+    }
+    
+    res.json({ success: true, book: rows[0] });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 도서 정보 수정 API
+app.put('/api/books/:id', async (req, res) => {
+  try {
+    const bookId = req.params.id;
+    const updateData = req.body;
+    
+    const query = `
+      UPDATE Book 
+      SET 
+        Book_name = ?,
+        Book_publisher = ?,
+        Book_author = ?,
+        Book_genre = ?,
+        Book_language = ?,
+        Book_ISBN = ?,
+        Book_pages = ?,
+        Book_published_date = ?,
+        Book_description = ?,
+        Book_state = ?
+      WHERE Book_ID = ?
+    `;
+
+    await db.query(query, [
+      updateData.Book_name,
+      updateData.Book_publisher,
+      updateData.Book_author,
+      updateData.Book_genre,
+      updateData.Book_language,
+      updateData.Book_ISBN,
+      updateData.Book_pages,
+      updateData.Book_published_date,
+      updateData.Book_description,
+      updateData.Book_state,
+      bookId
+    ]);
+
+    res.json({ success: true, message: '도서 정보가 수정되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 도서 삭제 API
+app.delete('/api/books/:id', async (req, res) => {
+  try {
+    const bookId = req.params.id;
+    const query = 'DELETE FROM Book WHERE Book_ID = ?';
+    await db.query(query, [bookId]);
+    res.json({ success: true, message: '도서가 삭제되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.get('/', (req, res) => {
   res.json({ message: '도서관 관리 시스템 API 서버' });
 });
