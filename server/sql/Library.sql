@@ -88,7 +88,7 @@ CREATE TABLE `Cooperation` (
 	`Cooperation_address`	VARCHAR(255)	NULL,
 	`Cooperation_pername`	VARCHAR(255)	NULL,
 	`Cooperation_number`	CHAR(20)	NULL,
-	`Cooperation_classification`	ENUM('출판사','복지관','학교')	NULL
+	`Cooperation_classification`	VARCHAR(10)	NULL
 );
 
 CREATE TABLE `Supply` (
@@ -138,7 +138,7 @@ CREATE TABLE `Media` (
 );
 
 CREATE TABLE `Contents` (
-	`Contents_ID`	INT	NOT NULL,
+	`Contents_ID`	INT	NOT NULL AUTO_INCREMENT,
 	`Book_ID`	INT	NOT NULL,
 	`Contents_type`	VARCHAR(10)	NULL,
 	`Contents_name`	VARCHAR(255)	NULL,
@@ -149,7 +149,7 @@ CREATE TABLE `Contents` (
 );
 
 CREATE TABLE `Reservation` (
-	`Reservation_ID`	INT	NOT NULL,
+	`Reservation_ID`	INT	NOT NULL AUTO_INCREMENT,
 	`Reservation_date`	DATE	NULL,
 	`Reservation_number`	INT	NULL,
 	`Book_ID`	INT	NOT NULL,
@@ -157,13 +157,13 @@ CREATE TABLE `Reservation` (
 );
 
 CREATE TABLE `Overdue` (
-	`Overdue_ID`	INT	NOT NULL,
+	`Overdue_ID`	INT	NOT NULL AUTO_INCREMENT,
 	`Overdue_starttime`	DATE	NULL,
 	`Overdue_endtime`	DATE	NULL
 );
 
 CREATE TABLE `Current_status` (
-	`Current_Status_ID`	INT	NOT NULL,
+	`Current_Status_ID`	INT	NOT NULL AUTO_INCREMENT,
 	`Borrow_log_ID`	INT	NOT NULL,
 	`borrow_ID`	INT	NOT NULL,
 	`Customer_ID`	INT	NOT NULL,

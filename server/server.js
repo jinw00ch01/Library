@@ -283,6 +283,323 @@ app.get('/api/staff/:id', async (req, res) => {
   }
 });
 
+// 고객 정보 수정 API
+app.put('/api/customer/:id', async (req, res) => {
+  try {
+    const customerId = req.params.id;
+    const updateData = req.body;
+    
+    const query = `
+      UPDATE Customer 
+      SET 
+        Customer_contact = ?,
+        Customer_email = ?,
+        Customer_address = ?,
+        Customer_preferences = ?
+      WHERE Customer_ID = ?
+    `;
+    
+    await db.query(query, [
+      updateData.contact,
+      updateData.email,
+      updateData.address,
+      updateData.preferences,
+      customerId
+    ]);
+    
+    res.json({ success: true, message: '회원정보가 수정되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 직원 정보 수정 API
+app.put('/api/staff/:id', async (req, res) => {
+  try {
+    const staffId = req.params.id;
+    const updateData = req.body;
+    
+    const query = `
+      UPDATE Staff 
+      SET 
+        staff_email = ?,
+        staff_number = ?
+      WHERE staff_ID = ?
+    `;
+    
+    await db.query(query, [
+      updateData.email,
+      updateData.number,
+      staffId
+    ]);
+    
+    res.json({ success: true, message: '직원정보가 수정되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 고객 탈퇴 API
+app.delete('/api/customer/:id', async (req, res) => {
+  try {
+    const customerId = req.params.id;
+    await db.query('DELETE FROM Customer WHERE Customer_ID = ?', [customerId]);
+    res.json({ success: true, message: '회원 탈퇴가 완료되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 직원 탈퇴 API
+app.delete('/api/staff/:id', async (req, res) => {
+  try {
+    const staffId = req.params.id;
+    await db.query('DELETE FROM Staff WHERE staff_ID = ?', [staffId]);
+    res.json({ success: true, message: '직원 정보가 삭제되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 부서 등록 API
+app.post('/api/department', async (req, res) => {
+  try {
+    const {
+      department_name,
+      department_classification,
+      department_location,
+      department_number
+    } = req.body;
+
+    const query = `
+      INSERT INTO Department (
+        department_name,
+        department_classification,
+        department_location,
+        department_number
+      ) VALUES (?, ?, ?, ?)
+    `;
+
+    const [result] = await db.query(query, [
+      department_name,
+      department_classification,
+      department_location,
+      department_number
+    ]);
+
+    res.json({ 
+      success: true, 
+      message: '부서가 등록되었습니다.',
+      departmentId: result.insertId 
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 도서 등록 API
+app.post('/api/book', async (req, res) => {
+  try {
+    const {
+      Book_name,
+      Book_publisher,
+      Book_author,
+      Book_genre,
+      Book_language,
+      Book_ISBN,
+      Book_pages,
+      Book_published_date,
+      Book_description,
+      Book_state
+    } = req.body;
+
+    const query = `
+      INSERT INTO Book (
+        Book_name,
+        Book_publisher,
+        Book_author,
+        Book_genre,
+        Book_language,
+        Book_ISBN,
+        Book_pages,
+        Book_published_date,
+        Book_description,
+        Book_state
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    const [result] = await db.query(query, [
+      Book_name,
+      Book_publisher,
+      Book_author,
+      Book_genre,
+      Book_language,
+      Book_ISBN,
+      Book_pages,
+      Book_published_date,
+      Book_description,
+      Book_state
+    ]);
+
+    res.json({ 
+      success: true, 
+      message: '도서가 등록되었습니다.',
+      bookId: result.insertId 
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 반납 장소 등록 API
+app.post('/api/returnLo', async (req, res) => {
+  try {
+    const { ReturnLo_location, ReturnLo_number, ReturnLo_capacity } = req.body;
+
+    const query = `
+      INSERT INTO ReturnLo (
+        ReturnLo_location,
+        ReturnLo_number,
+        ReturnLo_capacity
+      ) VALUES (?, ?, ?)
+    `;
+
+    const [result] = await db.query(query, [
+      ReturnLo_location,
+      ReturnLo_number,
+      ReturnLo_capacity
+    ]);
+
+    res.json({ 
+      success: true, 
+      message: '반납 장소가 등록되었습니다.',
+      returnLoId: result.insertId 
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 공급업체(Cooperation) 등록 API
+app.post('/api/cooperation', async (req, res) => {
+  try {
+    const {
+      Cooperation_name,
+      Cooperation_address,
+      Cooperation_pername,
+      Cooperation_number,
+      Cooperation_classification
+    } = req.body;
+
+    const query = `
+      INSERT INTO Supply (
+        Cooperation_name,
+        Cooperation_address,
+        Cooperation_pername,
+        Cooperation_number,
+        Cooperation_classification
+      ) VALUES (?, ?, ?, ?, ?)
+    `;
+
+    const [result] = await db.query(query, [
+      Cooperation_name,
+      Cooperation_address,
+      Cooperation_pername,
+      Cooperation_number,
+      Cooperation_classification
+    ]);
+
+    res.json({ 
+      success: true, 
+      message: '공급업체가 등록되었습니다.',
+      cooperationId: result.insertId 
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 콘텐츠(Contents) 등록 API
+app.post('/api/contents', async (req, res) => {
+  try {
+    const {
+      Book_ID,
+      Contents_type,
+      Contents_name,
+      Contents_author,
+      Contents_date,
+      Contents_state,
+      staff_ID
+    } = req.body;
+
+    const query = `
+      INSERT INTO Contents (
+        Book_ID,
+        Contents_type,
+        Contents_name,
+        Contents_author,
+        Contents_date,
+        Contents_state,
+        staff_ID
+      ) VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    const [result] = await db.query(query, [
+      Book_ID,
+      Contents_type,
+      Contents_name,
+      Contents_author,
+      Contents_date,
+      Contents_state,
+      staff_ID
+    ]);
+
+    res.json({ 
+      success: true, 
+      message: '콘텐츠가 등록되었습니다.',
+      contentsId: result.insertId 
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 영상 자료(Media) 등록 API
+app.post('/api/media', async (req, res) => {
+  try {
+    const {
+      media_link,
+      Book_ID,
+      media_date,
+      staff_ID
+    } = req.body;
+
+    const query = `
+      INSERT INTO Media (
+        media_link,
+        Book_ID,
+        media_date,
+        staff_ID
+      ) VALUES (?, ?, ?, ?)
+    `;
+
+    const [result] = await db.query(query, [
+      media_link,
+      Book_ID,
+      media_date,
+      staff_ID
+    ]);
+
+    res.json({ 
+      success: true, 
+      message: '영상 자료가 등록되었습니다.',
+      mediaId: result.insertId 
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.get('/', (req, res) => {
   res.json({ message: '도서관 관리 시스템 API 서버' });
 });
