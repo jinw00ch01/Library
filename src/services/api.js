@@ -108,4 +108,38 @@ export const adminService = {
     const response = await axios.post(`${API_BASE_URL}/media`, data);
     return response.data;
   }
+};
+
+export const staffService = {
+  getStaffInfo: async (staffId) => {
+    const response = await axios.get(`${API_BASE_URL}/staff/${staffId}`);
+    return response.data;
+  },
+  
+  updateStaffInfo: async (staffId, staffData) => {
+    const response = await axios.put(`${API_BASE_URL}/staff/${staffId}`, staffData);
+    return response.data;
+  },
+  
+  deleteStaffInfo: async (staffId) => {
+    const response = await axios.delete(`${API_BASE_URL}/staff/${staffId}`);
+    return response.data;
+  }
+};
+
+export const userService = {
+  getUserInfo: async (userType, userId) => {
+    const response = await axios.get(`${API_BASE_URL}/${userType}/${userId}`);
+    return response.data;
+  },
+  
+  updateUserInfo: async (userType, userId, data) => {
+    const response = await axios.put(`${API_BASE_URL}/${userType}/${userId}`, data);
+    return response.data;
+  },
+  
+  deleteUser: async (userType, userId) => {
+    const response = await axios.delete(`${API_BASE_URL}/${userType}/${userId}`);
+    return response.data;
+  }
 }; 

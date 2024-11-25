@@ -8,21 +8,15 @@ const StaffSignupForm = ({ onClose }) => {
 
   const onFinish = async (values) => {
     try {
-      const departmentMapping = {
-        '콘텐츠운영': 1,
-        '행정지원': 2
-      };
-
-      const formData = {
+      const signupData = {
         ...values,
-        department_ID: departmentMapping[values.department]
+        department_ID: values.department_ID,
       };
-
-      await authService.staffSignup(formData);
+      await authService.staffSignup(signupData);
       message.success('직원 등록이 완료되었습니다!');
       onClose();
     } catch (error) {
-      message.error('직원 등록 중 오류가 발생했습니다.');
+      message.error('직원 등록에 실패했습니다.');
     }
   };
 
@@ -30,8 +24,16 @@ const StaffSignupForm = ({ onClose }) => {
     <FormContainer>
       <Form form={form} layout="vertical" onFinish={onFinish}>
         <Form.Item
+          name="name"
+          label="이름"
+          rules={[{ required: true, message: '이름을 입력해주세요' }]}
+        >
+          <Input />
+        </Form.Item>
+
+        <Form.Item
           name="infoId"
-          label="직원 아이디"
+          label="아이디"
           rules={[{ required: true, message: '아이디를 입력해주세요' }]}
         >
           <Input />
@@ -46,9 +48,20 @@ const StaffSignupForm = ({ onClose }) => {
         </Form.Item>
 
         <Form.Item
-          name="name"
-          label="이름"
-          rules={[{ required: true, message: '이름을 입력해주세요' }]}
+          name="number"
+          label="연락처"
+          rules={[{ required: true, message: '연락처를 입력해주세요' }]}
+        >
+          <Input />
+        </Form.Item>
+
+        <Form.Item
+          name="email"
+          label="이메일"
+          rules={[
+            { required: true, message: '이메일을 입력해주세요' },
+            { type: 'email', message: '올바른 이메일 형식이 아닙니다' }
+          ]}
         >
           <Input />
         </Form.Item>
@@ -69,32 +82,14 @@ const StaffSignupForm = ({ onClose }) => {
         </Form.Item>
 
         <Form.Item
-          name="email"
-          label="이메일"
-          rules={[
-            { required: true, message: '이메일을 입력해주세요' },
-            { type: 'email', message: '올바른 이메일 형식이 아닙니다' }
-          ]}
-        >
-          <Input />
-        </Form.Item>
-
-        <Form.Item
-          name="number"
-          label="연락처"
-          rules={[{ required: true, message: '연락처를 입력해주세요' }]}
-        >
-          <Input />
-        </Form.Item>
-
-        <Form.Item
-          name="department"
+          name="department_ID"
           label="부서"
           rules={[{ required: true, message: '부서를 선택해주세요' }]}
         >
           <Select>
-            <Select.Option value="콘텐츠운영">콘텐츠운영</Select.Option>
-            <Select.Option value="행정지원">행정지원</Select.Option>
+            <Select.Option value={1}>콘텐츠운영팀</Select.Option>
+            <Select.Option value={2}>행정지원팀</Select.Option>
+            <Select.Option value={3}>영상등록팀</Select.Option>
           </Select>
         </Form.Item>
 

@@ -38,6 +38,7 @@ CREATE TABLE `Book` (
 
 CREATE TABLE `Customer` (
 	`Customer_ID`	INT	NOT NULL AUTO_INCREMENT,
+	`Customer_name`	VARCHAR(50)	NULL,
 	`Customer_InfoID`	VARCHAR(20)	NULL,
 	`Customer_InfoPASSWORD`	VARCHAR(255)	NULL,
 	`Customer_contact`	CHAR(20)	NULL,

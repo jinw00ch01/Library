@@ -44,6 +44,14 @@ const CustomerSignupForm = ({ onClose }) => {
     <FormContainer>
       <Form form={form} layout="vertical" onFinish={onFinish}>
         <Form.Item
+          name="name"
+          label="이름"
+          rules={[{ required: true, message: '이름을 입력해주세요' }]}
+        >
+          <Input />
+        </Form.Item>
+
+        <Form.Item
           name="infoId"
           label="아이디"
           rules={[{ required: true, message: '아이디를 입력해주세요' }]}
@@ -86,7 +94,6 @@ const CustomerSignupForm = ({ onClose }) => {
           <Select>
             <Select.Option value="학생">학생</Select.Option>
             <Select.Option value="교수">교수</Select.Option>
-            <Select.Option value="외부인">외부인</Select.Option>
             <Select.Option value="일반">일반</Select.Option>
           </Select>
         </Form.Item>
@@ -100,7 +107,22 @@ const CustomerSignupForm = ({ onClose }) => {
         </Form.Item>
 
         <Form.Item name="preferences" label="선호 장르">
-          <Input />
+          <Select mode="multiple" placeholder="선호 장르를 선택해주세요">
+            <Select.Option value="사전">사전</Select.Option>
+            <Select.Option value="철학">철학</Select.Option>
+            <Select.Option value="종교">종교</Select.Option>
+            <Select.Option value="사회과학">사회과학</Select.Option>
+            <Select.Option value="자연과학">자연과학</Select.Option>
+            <Select.Option value="응용과학&공학">응용과학&공학</Select.Option>
+            <Select.Option value="예술">예술</Select.Option>
+            <Select.Option value="문학">문학</Select.Option>
+            <Select.Option value="역사&지리">역사&지리</Select.Option>
+            <Select.Option value="어린이&청소년">어린이&청소년</Select.Option>
+            <Select.Option value="전문서적">전문서적</Select.Option>
+            <Select.Option value="취미&실용">취미&실용</Select.Option>
+            <Select.Option value="경제&경영">경제&경영</Select.Option>
+            <Select.Option value="기타">기타</Select.Option>
+          </Select>
         </Form.Item>
 
         <Form.Item>

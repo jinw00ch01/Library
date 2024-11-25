@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Layout, Menu, Button, Modal } from 'antd';
+import { Layout, Menu, Button, Modal, Space } from 'antd';
 import { BookOutlined, UserOutlined, HomeOutlined, FormOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
 import CustomerSignupForm from './components/CustomerSignupForm';
@@ -27,10 +27,23 @@ const StyledLayout = styled(Layout)`
 
 const StyledHeader = styled(Header)`
   display: flex;
-  align-items: center;
+  align-items: stretch;
+  justify-content: space-between;
   background: #fff;
   padding: 0 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+`;
+
+const LeftSection = styled.div`
+  display: flex;
+  flex: 1;
+  align-items: center;
+`;
+
+const RightSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
 `;
 
 const Logo = styled.div`
@@ -41,7 +54,12 @@ const Logo = styled.div`
 `;
 
 const StyledMenu = styled(Menu)`
-  flex: 1;
+  flex-grow: 1;
+  display: flex;
+  
+  .ant-menu-item {
+    flex: none;
+  }
 `;
 
 const SignupButton = styled(Button)`
@@ -78,12 +96,38 @@ const App = () => {
   const [isLoginVisible, setIsLoginVisible] = useState(false);
   const [signupType, setSignupType] = useState(null);
   const [loginType, setLoginType] = useState(null);
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
-  const [userType, setUserType] = useState(localStorage.getItem('userType'));
+  const [user, setUser] = useState(null);
+  const [userType, setUserType] = useState(null);
   const [showUserInfo, setShowUserInfo] = useState(false);
   const [isInfoRegVisible, setIsInfoRegVisible] = useState(false);
   const [infoRegType, setInfoRegType] = useState(null);
   const [isBookManageVisible, setIsBookManageVisible] = useState(false);
+  const [isUserInfoVisible, setIsUserInfoVisible] = useState(false);
+
+  const menuItems = [
+    {
+      key: 'home',
+      icon: <HomeOutlined />,
+      label: '홈'
+    }
+  ];
+
+  if (user && userType === 'staff') {
+    menuItems.push(
+      {
+        key: 'books',
+        icon: <BookOutlined />,
+        label: '도서 관리',
+        onClick: () => setIsBookManageVisible(true)
+      },
+      {
+        key: 'info',
+        icon: <FormOutlined />,
+        label: '정보 등록',
+        onClick: () => setIsInfoRegVisible(true)
+      }
+    );
+  }
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
@@ -112,9 +156,13 @@ const App = () => {
   };
 
   const handleLoginSuccess = (userData, type) => {
-    setUser(userData);
+    const userWithType = {
+      ...userData,
+      type: type
+    };
+    setUser(userWithType);
     setUserType(type);
-    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('user', JSON.stringify(userWithType));
     localStorage.setItem('userType', type);
     setIsLoginVisible(false);
     setLoginType(null);
@@ -162,59 +210,58 @@ const App = () => {
     }
   };
 
-  const menuItems = user && userType === 'staff' ? [
-    {
-      key: '1',
-      icon: <HomeOutlined />,
-      label: '홈'
-    },
-    {
-      key: '2',
-      icon: <BookOutlined />,
-      label: '도서 관리'
-    },
-    {
-      key: '3',
-      icon: <FormOutlined />,
-      label: '정보 등록'
+  const renderUserSection = () => {
+    if (user) {
+      return (
+        <>
+          <WelcomeText>
+            {user.name}{userType === 'customer' ? '고객' : '직원'}님, 환영합니다!
+          </WelcomeText>
+          <Button type="text" onClick={() => setIsUserInfoVisible(true)}>
+            내 정보
+          </Button>
+          <Button onClick={handleLogout}>로그아웃</Button>
+        </>
+      );
     }
-  ] : [
-    {
-      key: '1',
-      icon: <HomeOutlined />,
-      label: '홈'
+    return (
+      <>
+        <Button type="primary" onClick={handleLoginClick}>
+          로그인
+        </Button>
+        <Button onClick={handleSignupClick}>
+          회원가입
+        </Button>
+      </>
+    );
+  };
+
+  const renderStaffMenu = () => {
+    if (user && userType === 'staff') {
+      return (
+        <>
+          <Menu.Item key="books" icon={<BookOutlined />} onClick={() => setIsBookManageVisible(true)}>
+            도서 관리
+          </Menu.Item>
+          <Menu.Item key="info" icon={<FormOutlined />} onClick={() => setIsInfoRegVisible(true)}>
+            정보 등록
+          </Menu.Item>
+        </>
+      );
     }
-  ];
+    return null;
+  };
 
   return (
     <StyledLayout>
       <StyledHeader>
-        <Logo>도서관 관리 시스템</Logo>
-        <StyledMenu mode="horizontal" defaultSelectedKeys={['1']} items={menuItems} onClick={handleMenuClick} />
-        <ButtonGroup>
-          {user ? (
-            <>
-              <WelcomeText>
-                {user.infoId}{userType === 'staff' ? '직원' : '고객'}님, 환영합니다!
-              </WelcomeText>
-              <Button onClick={() => setShowUserInfo(true)}>
-                개인정보 조회
-              </Button>
-              <Button onClick={handleLogout}>
-                로그아웃
-              </Button>
-            </>
-          ) : (
-            <>
-              <LoginButton onClick={handleLoginClick}>
-                로그인
-              </LoginButton>
-              <SignupButton onClick={handleSignupClick}>
-                회원가입
-              </SignupButton>
-            </>
-          )}
-        </ButtonGroup>
+        <LeftSection>
+          <Logo>도서관 관리 시스템</Logo>
+          <StyledMenu mode="horizontal" selectedKeys={[]} items={menuItems} />
+        </LeftSection>
+        <RightSection>
+          {renderUserSection()}
+        </RightSection>
       </StyledHeader>
       
       <StyledContent>
@@ -257,8 +304,8 @@ const App = () => {
       </Modal>
 
       <UserInfoModal
-        visible={showUserInfo}
-        onClose={() => setShowUserInfo(false)}
+        visible={isUserInfoVisible}
+        onClose={() => setIsUserInfoVisible(false)}
         userType={userType}
         userId={user?.id}
         onLogout={handleLogout}
@@ -292,8 +339,8 @@ const App = () => {
 };
 
 const WelcomeText = styled.span`
-  margin-right: 16px;
   color: #1890ff;
+  font-weight: 500;
 `;
 
 const ButtonGroup = styled.div`

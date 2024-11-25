@@ -38,6 +38,7 @@ app.post('/api/customer/signup', async (req, res) => {
     const {
       infoId,
       password,
+      name,
       contact,
       email,
       classification,
@@ -46,38 +47,14 @@ app.post('/api/customer/signup', async (req, res) => {
       preferences
     } = req.body;
 
-    // 디버깅을 위한 상세 로그
-    console.log('=== Customer Signup Debug Info ===');
-    console.log('Request body:', req.body);
-    console.log('Classification:', classification);
-    console.log('Birthdate:', birthdate);
-    console.log('================================');
-
-    // 허용된 분류 값 검증
-    const allowedClassifications = ['학생', '교수', '외부인', '일반'];
-    if (!allowedClassifications.includes(classification)) {
-      return res.status(400).json({
-        error: '올바르지 않은 회원 구분입니다.',
-        allowedValues: allowedClassifications
-      });
-    }
-
-    // 필수 필드 검증
-    if (!infoId || !password || !contact || !email || !classification) {
-      return res.status(400).json({
-        error: '필수 필드가 누락되었습니다.',
-        receivedData: { infoId, contact, email, classification }
-      });
-    }
-
     const query = `
       INSERT INTO Customer (
         Customer_InfoID,
         Customer_InfoPASSWORD,
+        Customer_name,
         Customer_contact,
         Customer_email,
         Customer_Classification,
-        Customer_Credit,
         Customer_address,
         Customer_birthdate,
         Customer_membership_date,
@@ -85,38 +62,21 @@ app.post('/api/customer/signup', async (req, res) => {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), ?)
     `;
 
-    const params = [
+    await db.query(query, [
       infoId,
       password,
+      name,
       contact,
       email,
       classification,
-      '일반',  // Customer_Credit의 기본값
-      address || null,
-      birthdate ? new Date(birthdate).toISOString().split('T')[0] : null,
-      preferences || null
-    ];
+      address,
+      birthdate,
+      preferences
+    ]);
 
-    console.log('Query parameters:', params);
-
-    const [result] = await db.query(query, params);
-    res.json({
-      success: true,
-      message: '회원가입이 완료되었습니다.',
-      customerId: result.insertId
-    });
+    res.json({ success: true, message: '회원가입이 완료되었습니다.' });
   } catch (error) {
-    console.error('=== Error Details ===');
-    console.error('Error:', error);
-    console.error('SQL Message:', error.sqlMessage);
-    console.error('SQL State:', error.sqlState);
-    console.error('===================');
-
-    res.status(500).json({
-      error: '데이터베이스 오류가 발생했습니다.',
-      details: error.sqlMessage,
-      state: error.sqlState
-    });
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -171,7 +131,17 @@ app.post('/api/customer/login', async (req, res) => {
     const { infoId, password } = req.body;
     
     const query = `
-      SELECT Customer_ID, Customer_InfoID, Customer_Classification 
+      SELECT 
+        Customer_ID,
+        Customer_name,
+        Customer_InfoID,
+        Customer_contact,
+        Customer_email,
+        Customer_Classification,
+        Customer_Credit,
+        Customer_address,
+        Customer_birthdate,
+        Customer_membership_date
       FROM Customer 
       WHERE Customer_InfoID = ? AND Customer_InfoPASSWORD = ?
     `;
@@ -186,8 +156,8 @@ app.post('/api/customer/login', async (req, res) => {
       success: true, 
       user: {
         id: rows[0].Customer_ID,
-        infoId: rows[0].Customer_InfoID,
-        classification: rows[0].Customer_Classification
+        name: rows[0].Customer_name,
+        ...rows[0]
       }
     });
   } catch (error) {
@@ -201,7 +171,7 @@ app.post('/api/staff/login', async (req, res) => {
     const { infoId, password } = req.body;
     
     const query = `
-      SELECT staff_ID, staff_InfoID, staff_classification 
+      SELECT * 
       FROM Staff 
       WHERE staff_InfoID = ? AND staff_InfoPASSWORD = ?
     `;
@@ -217,7 +187,8 @@ app.post('/api/staff/login', async (req, res) => {
       user: {
         id: rows[0].staff_ID,
         infoId: rows[0].staff_InfoID,
-        classification: rows[0].staff_classification
+        classification: rows[0].staff_classification,
+        name: rows[0].staff_name
       }
     });
   } catch (error) {
@@ -231,6 +202,8 @@ app.get('/api/customer/:id', async (req, res) => {
     const customerId = req.params.id;
     const query = `
       SELECT 
+        Customer_ID,
+        Customer_name,
         Customer_InfoID,
         Customer_contact,
         Customer_email,
@@ -249,7 +222,10 @@ app.get('/api/customer/:id', async (req, res) => {
       return res.status(404).json({ error: '고객 정보를 찾을 수 없습니다.' });
     }
     
-    res.json({ success: true, customerInfo: rows[0] });
+    res.json({ 
+      success: true, 
+      userInfo: rows[0] 
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -261,53 +237,27 @@ app.get('/api/staff/:id', async (req, res) => {
     const staffId = req.params.id;
     const query = `
       SELECT 
-        staff_InfoID,
-        staff_name,
-        staff_classification,
-        staff_email,
-        staff_number,
-        department_ID
-      FROM Staff 
-      WHERE staff_ID = ?
+        s.staff_ID,
+        s.staff_name,
+        s.staff_InfoID,
+        s.staff_number,
+        s.staff_email,
+        s.staff_classification,
+        s.department_ID,
+        d.department_name
+      FROM Staff s 
+      JOIN Department d ON s.department_ID = d.department_ID 
+      WHERE s.staff_ID = ?
     `;
-    
     const [rows] = await db.query(query, [staffId]);
-    
-    if (rows.length === 0) {
-      return res.status(404).json({ error: '직원 정보를 찾을 수 없습니다.' });
+    if (rows.length > 0) {
+      res.json({ 
+        success: true, 
+        userInfo: rows[0] 
+      });
+    } else {
+      res.status(404).json({ error: '직원 정보를 찾을 수 없습니다.' });
     }
-    
-    res.json({ success: true, staffInfo: rows[0] });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// 고객 정보 수정 API
-app.put('/api/customer/:id', async (req, res) => {
-  try {
-    const customerId = req.params.id;
-    const updateData = req.body;
-    
-    const query = `
-      UPDATE Customer 
-      SET 
-        Customer_contact = ?,
-        Customer_email = ?,
-        Customer_address = ?,
-        Customer_preferences = ?
-      WHERE Customer_ID = ?
-    `;
-    
-    await db.query(query, [
-      updateData.contact,
-      updateData.email,
-      updateData.address,
-      updateData.preferences,
-      customerId
-    ]);
-    
-    res.json({ success: true, message: '회원정보가 수정되었습니다.' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -318,22 +268,72 @@ app.put('/api/staff/:id', async (req, res) => {
   try {
     const staffId = req.params.id;
     const updateData = req.body;
-    
+
     const query = `
       UPDATE Staff 
       SET 
+        staff_name = ?,
+        staff_number = ?,
         staff_email = ?,
-        staff_number = ?
+        staff_classification = ?,
+        department_ID = ?
       WHERE staff_ID = ?
     `;
-    
+
     await db.query(query, [
-      updateData.email,
-      updateData.number,
-      staffId
+      updateData.staff_name,
+      updateData.staff_number,
+      updateData.staff_email,
+      updateData.staff_classification,
+      updateData.department_ID,
+      staffId,
     ]);
-    
-    res.json({ success: true, message: '직원정보가 수정되었습니다.' });
+
+    res.json({ success: true, message: '직원 정보가 수정되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 직원 정보 삭제 API
+app.delete('/api/staff/:id', async (req, res) => {
+  try {
+    await db.query('DELETE FROM Staff WHERE staff_ID = ?', [req.params.id]);
+    res.json({ message: '직원 정보가 삭제되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 고객 정보 수정 API
+app.put('/api/customer/:id', async (req, res) => {
+  try {
+    const customerId = req.params.id;
+    const updateData = req.body;
+
+    const query = `
+      UPDATE Customer 
+      SET 
+        Customer_name = ?,
+        Customer_contact = ?,
+        Customer_email = ?,
+        Customer_Classification = ?,
+        Customer_address = ?,
+        Customer_birthdate = ?
+      WHERE Customer_ID = ?
+    `;
+
+    await db.query(query, [
+      updateData.Customer_name,
+      updateData.Customer_contact,
+      updateData.Customer_email,
+      updateData.Customer_Classification,
+      updateData.Customer_address,
+      updateData.Customer_birthdate,
+      customerId,
+    ]);
+
+    res.json({ success: true, message: '회원정보가 수정되었습니다.' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
