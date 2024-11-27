@@ -191,6 +191,33 @@ export const adminService = {
       console.error('콘텐츠 삭제 API 에러:', error);
       throw error;
     }
+  },
+  getMedias: async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/medias`);
+      return response.data;
+    } catch (error) {
+      console.error('영상자료 조회 API 에러:', error);
+      throw error;
+    }
+  },
+  updateMedia: async (mediaId, data) => {
+    try {
+      const response = await axios.put(`${API_BASE_URL}/medias/${mediaId}`, data);
+      return response.data;
+    } catch (error) {
+      console.error('영상자료 수정 API 에러:', error);
+      throw error;
+    }
+  },
+  deleteMedia: async (mediaId) => {
+    try {
+      const response = await axios.delete(`${API_BASE_URL}/medias/${mediaId}`);
+      return response.data;
+    } catch (error) {
+      console.error('영상자료 삭제 API 에러:', error);
+      throw error;
+    }
   }
 };
 

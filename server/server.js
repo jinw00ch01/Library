@@ -662,7 +662,7 @@ app.put('/api/books/:id', async (req, res) => {
       bookId
     ]);
 
-    res.json({ success: true, message: '도서 정보가 수정되었��니다.' });
+    res.json({ success: true, message: '도서 정보가 수정되었니다.' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -970,6 +970,58 @@ app.delete('/api/contents/:id', async (req, res) => {
     res.json({ success: true, message: '콘텐츠가 삭제되었습니다.' });
   } catch (error) {
     console.error('콘텐츠 삭제 에러:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 영상자료 목록 조회 API
+app.get('/api/medias', async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM Media');
+    res.json({ success: true, medias: rows });
+  } catch (error) {
+    console.error('영상자료 조회 에러:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 영상자료 정보 수정 API
+app.put('/api/medias/:id', async (req, res) => {
+  try {
+    const mediaId = req.params.id;
+    const { media_link, Book_ID, media_date } = req.body;
+
+    const query = `
+      UPDATE Media
+      SET
+        media_link = ?,
+        Book_ID = ?,
+        media_date = ?
+      WHERE media_ID = ?
+    `;
+
+    await db.query(query, [
+      media_link,
+      Book_ID,
+      media_date,
+      mediaId
+    ]);
+
+    res.json({ success: true, message: '영상자료 정보가 수정되었습니다.' });
+  } catch (error) {
+    console.error('영상자료 수정 에러:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 영상자료 삭제 API
+app.delete('/api/medias/:id', async (req, res) => {
+  try {
+    const mediaId = req.params.id;
+    await db.query('DELETE FROM Media WHERE media_ID = ?', [mediaId]);
+    res.json({ success: true, message: '영상자료가 삭제되었습니다.' });
+  } catch (error) {
+    console.error('영상자료 삭제 에러:', error);
     res.status(500).json({ error: error.message });
   }
 });

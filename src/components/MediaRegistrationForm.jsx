@@ -3,26 +3,31 @@ import { Form, Input, DatePicker, Button, message } from 'antd';
 import styled from 'styled-components';
 import { adminService } from '../services/api';
 
-const MediaRegistrationForm = ({ onClose, staffId }) => {
+const MediaRegistrationForm = ({ staffId }) => {
   const [form] = Form.useForm();
 
   const onFinish = async (values) => {
     try {
       const formData = {
         ...values,
-        media_date: values.media_date?.format('YYYY-MM-DD'),
+        media_date: values.media_date.format('YYYY-MM-DD'),
         staff_ID: staffId
       };
+      
+      console.log('전송되는 데이터:', formData);
+      
       await adminService.registerMedia(formData);
-      message.success('영상 자료가 등록되었습니다!');
-      onClose();
+      message.success('영상자료가 등록되었습니다!');
+      form.resetFields();
     } catch (error) {
-      message.error('영상 자료 등록에 실패했습니다.');
+      console.error('등록 실패:', error);
+      message.error('영상자료 등록에 실패했습니다.');
     }
   };
 
   return (
     <FormContainer>
+      <h2>신규 영상자료 등록</h2>
       <Form form={form} layout="vertical" onFinish={onFinish}>
         <Form.Item
           name="media_link"
@@ -40,7 +45,11 @@ const MediaRegistrationForm = ({ onClose, staffId }) => {
           <Input type="number" />
         </Form.Item>
 
-        <Form.Item name="media_date" label="등록일">
+        <Form.Item
+          name="media_date"
+          label="등록일"
+          rules={[{ required: true, message: '등록일을 선택해주세요' }]}
+        >
           <DatePicker style={{ width: '100%' }} />
         </Form.Item>
 
