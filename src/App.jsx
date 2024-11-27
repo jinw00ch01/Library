@@ -103,31 +103,32 @@ const App = () => {
   const [infoRegType, setInfoRegType] = useState(null);
   const [isBookManageVisible, setIsBookManageVisible] = useState(false);
   const [isUserInfoVisible, setIsUserInfoVisible] = useState(false);
+  const [currentContent, setCurrentContent] = useState('home');
 
   const menuItems = [
     {
       key: 'home',
       icon: <HomeOutlined />,
-      label: '홈'
-    }
+      label: '홈',
+      onClick: () => setCurrentContent('home'),
+    },
+    ...(user && userType === 'staff'
+      ? [
+          {
+            key: 'books',
+            icon: <BookOutlined />,
+            label: '도서 관리',
+            onClick: () => setCurrentContent('bookManagement'),
+          },
+          {
+            key: 'info',
+            icon: <FormOutlined />,
+            label: '정보 등록',
+            onClick: () => setCurrentContent('infoRegistration'),
+          },
+        ]
+      : []),
   ];
-
-  if (user && userType === 'staff') {
-    menuItems.push(
-      {
-        key: 'books',
-        icon: <BookOutlined />,
-        label: '도서 관리',
-        onClick: () => setIsBookManageVisible(true)
-      },
-      {
-        key: 'info',
-        icon: <FormOutlined />,
-        label: '정보 등록',
-        onClick: () => setIsInfoRegVisible(true)
-      }
-    );
-  }
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
@@ -191,24 +192,21 @@ const App = () => {
     setInfoRegType(type);
   };
 
-  const renderInfoRegForm = () => {
-    switch (infoRegType) {
-      case 'department':
-        return <DepartmentRegistrationForm onClose={handleInfoRegClose} />;
-      case 'book':
-        return <BookRegistrationForm onClose={handleInfoRegClose} />;
-      case 'returnLo':
-        return <ReturnLoRegistrationForm onClose={handleInfoRegClose} />;
-      case 'supply':
-        return <CooperationRegistrationForm onClose={handleInfoRegClose} />;
-      case 'contents':
-        return <ContentsRegistrationForm onClose={handleInfoRegClose} staffId={user?.id} />;
-      case 'media':
-        return <MediaRegistrationForm onClose={handleInfoRegClose} staffId={user?.id} />;
-      default:
-        return <InfoRegistrationSelection onSelect={handleInfoRegTypeSelect} />;
-    }
-  };
+  const renderInfoRegForm = () => (
+    <>
+      <InfoRegistrationSelection onSelect={handleInfoRegTypeSelect} />
+      {infoRegType && (
+        <div style={{ marginTop: '24px' }}>
+          {infoRegType === 'department' && <DepartmentRegistrationForm onClose={handleInfoRegClose} />}
+          {infoRegType === 'book' && <BookRegistrationForm onClose={handleInfoRegClose} />}
+          {infoRegType === 'returnLo' && <ReturnLoRegistrationForm onClose={handleInfoRegClose} />}
+          {infoRegType === 'supply' && <CooperationRegistrationForm onClose={handleInfoRegClose} />}
+          {infoRegType === 'contents' && <ContentsRegistrationForm onClose={handleInfoRegClose} staffId={user?.id} />}
+          {infoRegType === 'media' && <MediaRegistrationForm onClose={handleInfoRegClose} staffId={user?.id} />}
+        </div>
+      )}
+    </>
+  );
 
   const renderUserSection = () => {
     if (user) {
@@ -265,10 +263,14 @@ const App = () => {
       </StyledHeader>
       
       <StyledContent>
-        <WelcomeSection>
-          <h1>도서관에 오신 것을 환영합니다</h1>
-          <p>다양한 도서를 검색하고 관리할 수 있습니다.</p>
-        </WelcomeSection>
+        {currentContent === 'home' && (
+          <WelcomeSection>
+            <h1>도서관에 오신 것을 환영합니다</h1>
+            <p>다양한 도서를 검색하고 관리할 수 있습니다.</p>
+          </WelcomeSection>
+        )}
+        {currentContent === 'bookManagement' && <BookManagement />}
+        {currentContent === 'infoRegistration' && renderInfoRegForm()}
       </StyledContent>
 
       <Modal
@@ -310,26 +312,6 @@ const App = () => {
         userId={user?.id}
         onLogout={handleLogout}
       />
-
-      <Modal
-        title={infoRegType ? getModalTitle(infoRegType) : "정보 등록"}
-        open={isInfoRegVisible}
-        onCancel={handleInfoRegClose}
-        footer={null}
-        width={800}
-      >
-        {renderInfoRegForm()}
-      </Modal>
-
-      <Modal
-        title="도서 관리"
-        open={isBookManageVisible}
-        onCancel={() => setIsBookManageVisible(false)}
-        footer={null}
-        width={1000}
-      >
-        <BookManagement />
-      </Modal>
 
       <StyledFooter>
         도서관 관리 시스템 ©{new Date().getFullYear()} Created by TEAM1
