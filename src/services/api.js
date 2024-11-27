@@ -101,12 +101,96 @@ export const adminService = {
     return response.data;
   },
   registerContents: async (data) => {
-    const response = await axios.post(`${API_BASE_URL}/contents`, data);
-    return response.data;
+    try {
+      const response = await axios.post(`${API_BASE_URL}/contents`, data);
+      return response.data;
+    } catch (error) {
+      console.error('API 호출 에러:', error);
+      throw error;
+    }
   },
   registerMedia: async (data) => {
     const response = await axios.post(`${API_BASE_URL}/media`, data);
     return response.data;
+  },
+  getDepartments: async () => {
+    const response = await axios.get(`${API_BASE_URL}/departments`);
+    return response.data;
+  },
+  updateDepartment: async (departmentId, data) => {
+    const response = await axios.put(`${API_BASE_URL}/departments/${departmentId}`, data);
+    return response.data;
+  },
+  deleteDepartment: async (departmentId) => {
+    const response = await axios.delete(`${API_BASE_URL}/departments/${departmentId}`);
+    return response.data;
+  },
+  getReturnLocations: async () => {
+    const response = await axios.get(`${API_BASE_URL}/returnLocations`);
+    return response.data;
+  },
+  updateReturnLocation: async (locationId, data) => {
+    const response = await axios.put(`${API_BASE_URL}/returnLocations/${locationId}`, data);
+    return response.data;
+  },
+  deleteReturnLocation: async (locationId) => {
+    const response = await axios.delete(`${API_BASE_URL}/returnLocations/${locationId}`);
+    return response.data;
+  },
+  getCooperations: async () => {
+    const response = await axios.get(`${API_BASE_URL}/cooperations`);
+    return response.data;
+  },
+  updateCooperation: async (cooperationId, data) => {
+    const response = await axios.put(`${API_BASE_URL}/cooperations/${cooperationId}`, data);
+    return response.data;
+  },
+  deleteCooperation: async (cooperationId) => {
+    const response = await axios.delete(`${API_BASE_URL}/cooperations/${cooperationId}`);
+    return response.data;
+  },
+  registerSupply: async (data) => {
+    const response = await axios.post(`${API_BASE_URL}/supply`, data);
+    return response.data;
+  },
+  getSupplies: async () => {
+    const response = await axios.get(`${API_BASE_URL}/supplies`);
+    return response.data;
+  },
+  updateSupply: async (supplyId, data) => {
+    const response = await axios.put(`${API_BASE_URL}/supplies/${supplyId}`, data);
+    return response.data;
+  },
+  deleteSupply: async (supplyId) => {
+    const response = await axios.delete(`${API_BASE_URL}/supplies/${supplyId}`);
+    return response.data;
+  },
+  getContents: async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/contents`);
+      return response.data;
+    } catch (error) {
+      console.error('콘텐츠 조회 API 에러:', error);
+      throw error;
+    }
+  },
+  updateContents: async (contentsId, data) => {
+    try {
+      const response = await axios.put(`${API_BASE_URL}/contents/${contentsId}`, data);
+      return response.data;
+    } catch (error) {
+      console.error('콘텐츠 수정 API 에러:', error);
+      throw error;
+    }
+  },
+  deleteContents: async (contentsId) => {
+    try {
+      const response = await axios.delete(`${API_BASE_URL}/contents/${contentsId}`);
+      return response.data;
+    } catch (error) {
+      console.error('콘텐츠 삭제 API 에러:', error);
+      throw error;
+    }
   }
 };
 

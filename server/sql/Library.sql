@@ -94,11 +94,15 @@ CREATE TABLE `Cooperation` (
 
 CREATE TABLE `Supply` (
 	`Supply_ID`	INT	NOT NULL AUTO_INCREMENT,
-	`Cooperation_ID`	INT	NOT NULL,
-	`Supply_date`	DATE	NULL,
-	`Supply_price`	INT	NULL,
+	`Department_ID`	INT	NOT NULL,
+	`Supply_date`	DATE	NOT NULL,
+	`Supply_price`	DECIMAL(10, 2)	NOT NULL,
+	`Book_ID`	INT	NOT NULL,
 	`staff_ID`	INT	NOT NULL,
-	`Book_ID`	INT	NOT NULL
+	PRIMARY KEY (`Supply_ID`),
+	FOREIGN KEY (`Department_ID`) REFERENCES `Department`(`department_ID`),
+	FOREIGN KEY (`Book_ID`) REFERENCES `Book`(`Book_ID`),
+	FOREIGN KEY (`staff_ID`) REFERENCES `Staff`(`staff_ID`)
 );
 
 CREATE TABLE `Return` (

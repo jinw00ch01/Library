@@ -519,7 +519,7 @@ app.post('/api/cooperation', async (req, res) => {
   }
 });
 
-// 콘텐츠(Contents) 등록 API
+// 콘텐츠 등록 API
 app.post('/api/contents', async (req, res) => {
   try {
     const {
@@ -533,18 +533,12 @@ app.post('/api/contents', async (req, res) => {
     } = req.body;
 
     const query = `
-      INSERT INTO Contents (
-        Book_ID,
-        Contents_type,
-        Contents_name,
-        Contents_author,
-        Contents_date,
-        Contents_state,
-        staff_ID
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO Contents 
+      (Book_ID, Contents_type, Contents_name, Contents_author, Contents_date, Contents_state, staff_ID)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
 
-    const [result] = await db.query(query, [
+    await db.query(query, [
       Book_ID,
       Contents_type,
       Contents_name,
@@ -554,12 +548,9 @@ app.post('/api/contents', async (req, res) => {
       staff_ID
     ]);
 
-    res.json({ 
-      success: true, 
-      message: '콘텐츠가 등록되었습니다.',
-      contentsId: result.insertId 
-    });
+    res.json({ success: true, message: '콘텐츠가 등록되었습니다.' });
   } catch (error) {
+    console.error('콘텐츠 등록 에러:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -671,7 +662,7 @@ app.put('/api/books/:id', async (req, res) => {
       bookId
     ]);
 
-    res.json({ success: true, message: '도서 정보가 수정되었습니다.' });
+    res.json({ success: true, message: '도서 정보가 수정되었��니다.' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -685,6 +676,300 @@ app.delete('/api/books/:id', async (req, res) => {
     await db.query(query, [bookId]);
     res.json({ success: true, message: '도서가 삭제되었습니다.' });
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 부서 목록 조회 API
+app.get('/api/departments', async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM Department');
+    res.json({ success: true, departments: rows });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 부서 정보 수정 API
+app.put('/api/departments/:id', async (req, res) => {
+  try {
+    const departmentId = req.params.id;
+    const { department_name, department_classification, department_location, department_number } = req.body;
+
+    const query = `
+      UPDATE Department
+      SET
+        department_name = ?,
+        department_classification = ?,
+        department_location = ?,
+        department_number = ?
+      WHERE department_ID = ?
+    `;
+
+    await db.query(query, [
+      department_name,
+      department_classification,
+      department_location,
+      department_number,
+      departmentId
+    ]);
+
+    res.json({ success: true, message: '부서 정보가 수정되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 부서 삭제 API
+app.delete('/api/departments/:id', async (req, res) => {
+  try {
+    const departmentId = req.params.id;
+    await db.query('DELETE FROM Department WHERE department_ID = ?', [departmentId]);
+    res.json({ success: true, message: '부서가 삭제되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 반납장소 목록 조회 API
+app.get('/api/returnLocations', async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM ReturnLo');
+    res.json({ success: true, returnLocations: rows });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 반납장소 정보 수정 API
+app.put('/api/returnLocations/:id', async (req, res) => {
+  try {
+    const locationId = req.params.id;
+    const { ReturnLo_location, ReturnLo_number, ReturnLo_capacity } = req.body;
+
+    const query = `
+      UPDATE ReturnLo
+      SET
+        ReturnLo_location = ?,
+        ReturnLo_number = ?,
+        ReturnLo_capacity = ?
+      WHERE ReturnLo_ID = ?
+    `;
+
+    await db.query(query, [
+      ReturnLo_location,
+      ReturnLo_number,
+      ReturnLo_capacity,
+      locationId
+    ]);
+
+    res.json({ success: true, message: '반납장소 정보가 수정되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 반납장소 삭제 API
+app.delete('/api/returnLocations/:id', async (req, res) => {
+  try {
+    const locationId = req.params.id;
+    await db.query('DELETE FROM ReturnLo WHERE ReturnLo_ID = ?', [locationId]);
+    res.json({ success: true, message: '반납장소가 삭제되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 공급업체 목록 조회 API
+app.get('/api/cooperations', async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM Cooperation');
+    res.json({ success: true, cooperations: rows });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 공급업체 정보 수정 API
+app.put('/api/cooperations/:id', async (req, res) => {
+  try {
+    const cooperationId = req.params.id;
+    const { Cooperation_name, Cooperation_address, Cooperation_pername, Cooperation_number, Cooperation_classification } = req.body;
+
+    const query = `
+      UPDATE Cooperation
+      SET
+        Cooperation_name = ?,
+        Cooperation_address = ?,
+        Cooperation_pername = ?,
+        Cooperation_number = ?,
+        Cooperation_classification = ?
+      WHERE Cooperation_ID = ?
+    `;
+
+    await db.query(query, [
+      Cooperation_name,
+      Cooperation_address,
+      Cooperation_pername,
+      Cooperation_number,
+      Cooperation_classification,
+      cooperationId
+    ]);
+
+    res.json({ success: true, message: '공급업체 정보가 수정되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 공급업체 삭제 API
+app.delete('/api/cooperations/:id', async (req, res) => {
+  try {
+    const cooperationId = req.params.id;
+    await db.query('DELETE FROM Cooperation WHERE Cooperation_ID = ?', [cooperationId]);
+    res.json({ success: true, message: '공급업체가 삭제되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 공급명세 등록 API
+app.post('/api/supply', async (req, res) => {
+  try {
+    const {
+      Department_ID,
+      Supply_date,
+      Supply_price,
+      Book_ID,
+      staff_ID
+    } = req.body;
+
+    const query = `
+      INSERT INTO Supply 
+      (Department_ID, Supply_date, Supply_price, Book_ID, staff_ID)
+      VALUES (?, ?, ?, ?, ?)
+    `;
+
+    await db.query(query, [
+      Department_ID,
+      Supply_date,
+      Supply_price,
+      Book_ID,
+      staff_ID
+    ]);
+
+    res.json({ success: true, message: '공급명세가 등록되었습니다.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 공급명세 목록 조회 API
+app.get('/api/supplies', async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM Supply');
+    res.json({ success: true, supplies: rows });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 공급명세 정보 수정 API
+app.put('/api/supplies/:id', async (req, res) => {
+  try {
+    const supplyId = req.params.id;
+    const { Department_ID, Supply_date, Supply_price, Book_ID } = req.body;
+
+    const query = `
+      UPDATE Supply
+      SET
+        Department_ID = ?,
+        Supply_date = ?,
+        Supply_price = ?,
+        Book_ID = ?
+      WHERE Supply_ID = ?
+    `;
+
+    await db.query(query, [
+      Department_ID,
+      Supply_date,
+      Supply_price,
+      Book_ID,
+      supplyId
+    ]);
+
+    res.json({ success: true, message: '공급명세 정보가 수정되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 공급명세 삭제 API
+app.delete('/api/supplies/:id', async (req, res) => {
+  try {
+    const supplyId = req.params.id;
+    await db.query('DELETE FROM Supply WHERE Supply_ID = ?', [supplyId]);
+    res.json({ success: true, message: '공급명세가 삭제되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 콘텐츠 목록 조회 API
+app.get('/api/contents', async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM Contents');
+    res.json({ success: true, contents: rows });
+  } catch (error) {
+    console.error('콘텐츠 조회 에러:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 콘텐츠 정보 수정 API
+app.put('/api/contents/:id', async (req, res) => {
+  try {
+    const contentsId = req.params.id;
+    const { Book_ID, Contents_type, Contents_name, Contents_author, Contents_date, Contents_state } = req.body;
+
+    const query = `
+      UPDATE Contents
+      SET
+        Book_ID = ?,
+        Contents_type = ?,
+        Contents_name = ?,
+        Contents_author = ?,
+        Contents_date = ?,
+        Contents_state = ?
+      WHERE Contents_ID = ?
+    `;
+
+    await db.query(query, [
+      Book_ID,
+      Contents_type,
+      Contents_name,
+      Contents_author,
+      Contents_date,
+      Contents_state,
+      contentsId
+    ]);
+
+    res.json({ success: true, message: '콘텐츠 정보가 수정되었습니다.' });
+  } catch (error) {
+    console.error('콘텐츠 수정 에러:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 콘텐츠 삭제 API
+app.delete('/api/contents/:id', async (req, res) => {
+  try {
+    const contentsId = req.params.id;
+    await db.query('DELETE FROM Contents WHERE Contents_ID = ?', [contentsId]);
+    res.json({ success: true, message: '콘텐츠가 삭제되었습니다.' });
+  } catch (error) {
+    console.error('콘텐츠 삭제 에러:', error);
     res.status(500).json({ error: error.message });
   }
 });

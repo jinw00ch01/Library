@@ -18,6 +18,13 @@ import CooperationRegistrationForm from './components/CooperationRegistrationFor
 import ContentsRegistrationForm from './components/ContentsRegistrationForm';
 import MediaRegistrationForm from './components/MediaRegistrationForm';
 import BookManagement from './components/BookManagement';
+import DepartmentManagement from './components/DepartmentManagement';
+import ReturnLoManagement from './components/ReturnLoManagement';
+import CooperationManagement from './components/CooperationManagement';
+import SupplyRegistrationForm from './components/SupplyRegistrationForm';
+import SupplyManagement from './components/SupplyManagement';
+import ContentsManagement from './components/ContentsManagement';
+import MediaManagement from './components/MediaManagement';
 
 const { Header, Content, Footer } = Layout;
 
@@ -27,7 +34,7 @@ const StyledLayout = styled(Layout)`
 
 const StyledHeader = styled(Header)`
   display: flex;
-  align-items: stretch;
+  align-items: center;
   justify-content: space-between;
   background: #fff;
   padding: 0 20px;
@@ -91,6 +98,25 @@ const StyledFooter = styled(Footer)`
   background: #f0f2f5;
 `;
 
+const VerticalMenu = styled.div`
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  position: fixed;
+  top: 64px;
+  left: 0;
+  width: 200px;
+  height: calc(100% - 64px);
+  background-color: #f0f2f5;
+  padding: 16px;
+`;
+
+const ContentArea = styled.div`
+  margin-left: 220px;
+  padding: 50px;
+  background: #fff;
+`;
+
 const App = () => {
   const [isSignupVisible, setIsSignupVisible] = useState(false);
   const [isLoginVisible, setIsLoginVisible] = useState(false);
@@ -112,19 +138,22 @@ const App = () => {
       label: '홈',
       onClick: () => setCurrentContent('home'),
     },
-    ...(user && userType === 'staff'
+    ...(user && userType === 'customer'
       ? [
           {
-            key: 'books',
-            icon: <BookOutlined />,
-            label: '도서 관리',
-            onClick: () => setCurrentContent('bookManagement'),
+            key: 'searchBooks',
+            label: '도서 검색',
+            onClick: () => setCurrentContent('searchBooks'),
           },
           {
-            key: 'info',
-            icon: <FormOutlined />,
-            label: '정보 등록',
-            onClick: () => setCurrentContent('infoRegistration'),
+            key: 'searchContents',
+            label: '콘텐츠 검색',
+            onClick: () => setCurrentContent('searchContents'),
+          },
+          {
+            key: 'searchMedia',
+            label: '영상 검색',
+            onClick: () => setCurrentContent('searchMedia'),
           },
         ]
       : []),
@@ -173,6 +202,7 @@ const App = () => {
     authService.logout();
     setUser(null);
     setUserType(null);
+    setCurrentContent('home');
   };
 
   const handleMenuClick = ({ key }) => {
@@ -234,44 +264,64 @@ const App = () => {
     );
   };
 
-  const renderStaffMenu = () => {
-    if (user && userType === 'staff') {
-      return (
-        <>
-          <Menu.Item key="books" icon={<BookOutlined />} onClick={() => setIsBookManageVisible(true)}>
-            도서 관리
-          </Menu.Item>
-          <Menu.Item key="info" icon={<FormOutlined />} onClick={() => setIsInfoRegVisible(true)}>
-            정보 등록
-          </Menu.Item>
-        </>
-      );
-    }
-    return null;
-  };
+  const staffVerticalMenu = () => (
+    <VerticalMenu>
+      <Button type="text" onClick={() => setCurrentContent('registerBook')}>신규 도서 등록</Button>
+      <Button type="text" onClick={() => setCurrentContent('manageBook')}>도서 관리</Button>
+      <Button type="text" onClick={() => setCurrentContent('registerDepartment')}>신규 부서 등록</Button>
+      <Button type="text" onClick={() => setCurrentContent('manageDepartment')}>부서 관리</Button>
+      <Button type="text" onClick={() => setCurrentContent('registerReturnLocation')}>신규 반납장소 등록</Button>
+      <Button type="text" onClick={() => setCurrentContent('manageReturnLocation')}>반납장소 관리</Button>
+      <Button type="text" onClick={() => setCurrentContent('registerCooperation')}>신규 공급업체 등록</Button>
+      <Button type="text" onClick={() => setCurrentContent('manageCooperation')}>공급업체 관리</Button>
+      <Button type="text" onClick={() => setCurrentContent('registerSupply')}>신규 공급명세 등록</Button>
+      <Button type="text" onClick={() => setCurrentContent('manageSupply')}>공급명세 관리</Button>
+      <Button type="text" onClick={() => setCurrentContent('registerContents')}>신규 콘텐츠 등록</Button>
+      <Button type="text" onClick={() => setCurrentContent('manageContents')}>콘텐츠 관리</Button>
+      <Button type="text" onClick={() => setCurrentContent('registerMedia')}>신규 영상자료 등록</Button>
+      <Button type="text" onClick={() => setCurrentContent('manageMedia')}>영상자료 관리</Button>
+      <Button type="text" onClick={() => setCurrentContent('manageCustomers')}>고객 데이터 관리</Button>
+      <Button type="text" onClick={() => setCurrentContent('manageReviews')}>리뷰 신고 관리</Button>
+    </VerticalMenu>
+  );
 
   return (
     <StyledLayout>
       <StyledHeader>
         <LeftSection>
-          <Logo>도서관 관리 시스템</Logo>
+          <Logo>도서 관리 시스템</Logo>
           <StyledMenu mode="horizontal" selectedKeys={[]} items={menuItems} />
         </LeftSection>
         <RightSection>
           {renderUserSection()}
         </RightSection>
       </StyledHeader>
-      
-      <StyledContent>
+
+      {user && userType === 'staff' && staffVerticalMenu()}
+
+      <ContentArea>
         {currentContent === 'home' && (
           <WelcomeSection>
             <h1>도서관에 오신 것을 환영합니다</h1>
             <p>다양한 도서를 검색하고 관리할 수 있습니다.</p>
           </WelcomeSection>
         )}
-        {currentContent === 'bookManagement' && <BookManagement />}
+        {currentContent === 'registerBook' && <BookRegistrationForm />}
+        {currentContent === 'manageBook' && <BookManagement />}
         {currentContent === 'infoRegistration' && renderInfoRegForm()}
-      </StyledContent>
+        {currentContent === 'registerDepartment' && <DepartmentRegistrationForm />}
+        {currentContent === 'manageDepartment' && <DepartmentManagement />}
+        {currentContent === 'registerReturnLocation' && <ReturnLoRegistrationForm />}
+        {currentContent === 'manageReturnLocation' && <ReturnLoManagement />}
+        {currentContent === 'registerCooperation' && <CooperationRegistrationForm />}
+        {currentContent === 'manageCooperation' && <CooperationManagement />}
+        {currentContent === 'registerSupply' && <SupplyRegistrationForm staffId={user?.id} />}
+        {currentContent === 'manageSupply' && <SupplyManagement />}
+        {currentContent === 'registerContents' && <ContentsRegistrationForm staffId={user?.id} />}
+        {currentContent === 'manageContents' && <ContentsManagement />}
+        {currentContent === 'registerMedia' && <MediaRegistrationForm staffId={user?.id} />}
+        {currentContent === 'manageMedia' && <MediaManagement />}
+      </ContentArea>
 
       <Modal
         title="회원가입"

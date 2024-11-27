@@ -45,23 +45,19 @@ const UserInfoModal = ({ visible, onClose, userType, userId, onLogout }) => {
     }
   };
 
-  const handleDelete = async () => {
+  const handleDeleteAccount = () => {
     Modal.confirm({
-      title: userType === 'customer' ? '회원 탈퇴' : '직원 정보 삭제',
-      content: userType === 'customer' ? 
-        '정말로 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.' : 
-        '정말로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
+      title: '직원 정보 삭제',
+      content: '정말 삭제 하시겠습니까?',
       okText: '예',
-      okType: 'danger',
       cancelText: '아니오',
       onOk: async () => {
         try {
-          await userService.deleteUser(userType, userId);
-          message.success(userType === 'customer' ? '탈퇴되었습니다.' : '삭제되었습니다.');
-          onClose();
+          await userService.deleteStaff(userId);
+          message.success('직원 정보가 삭제되었습니다.');
           onLogout();
         } catch (error) {
-          message.error(userType === 'customer' ? '탈퇴에 실패했습니다.' : '삭제에 실패했습니다.');
+          message.error('직원 정보 삭제에 실패하였습니다.');
         }
       },
     });
@@ -77,14 +73,14 @@ const UserInfoModal = ({ visible, onClose, userType, userId, onLogout }) => {
           <Descriptions.Item label="아이디">{userInfo.Customer_InfoID}</Descriptions.Item>
           <Descriptions.Item label="연락처">{userInfo.Customer_contact}</Descriptions.Item>
           <Descriptions.Item label="이메일">{userInfo.Customer_email}</Descriptions.Item>
-          <Descriptions.Item label="회원구분">{userInfo.Customer_Classification}</Descriptions.Item>
-          <Descriptions.Item label="회원등급">{userInfo.Customer_Credit || '일반'}</Descriptions.Item>
+          <Descriptions.Item label="회원 구분">{userInfo.Customer_Classification}</Descriptions.Item>
+          <Descriptions.Item label="회원 등급">{userInfo.Customer_Credit}</Descriptions.Item>
           <Descriptions.Item label="주소">{userInfo.Customer_address}</Descriptions.Item>
           <Descriptions.Item label="생년월일">{userInfo.Customer_birthdate}</Descriptions.Item>
           <Descriptions.Item label="가입일">{userInfo.Customer_membership_date}</Descriptions.Item>
         </Descriptions>
       );
-    } else {
+    } else if (userType === 'staff') {
       return (
         <Descriptions bordered column={1}>
           <Descriptions.Item label="이름">{userInfo.staff_name}</Descriptions.Item>
@@ -93,9 +89,7 @@ const UserInfoModal = ({ visible, onClose, userType, userId, onLogout }) => {
           <Descriptions.Item label="이메일">{userInfo.staff_email}</Descriptions.Item>
           <Descriptions.Item label="직급">{userInfo.staff_classification}</Descriptions.Item>
           <Descriptions.Item label="부서">
-            {userInfo.department_ID === 1 ? '콘텐츠운영팀' : 
-             userInfo.department_ID === 2 ? '행정지원팀' : 
-             userInfo.department_ID === 3 ? '영상등록팀' : ''}
+            {userInfo.department_name}
           </Descriptions.Item>
         </Descriptions>
       );
@@ -134,7 +128,7 @@ const UserInfoModal = ({ visible, onClose, userType, userId, onLogout }) => {
           </ButtonContainer>
         </Form>
       );
-    } else {
+    } else if (userType === 'staff') {
       return (
         <Form form={form} layout="vertical" onFinish={handleUpdate}>
           <Form.Item name="staff_name" label="이름" rules={[{ required: true }]}>
@@ -191,7 +185,7 @@ const UserInfoModal = ({ visible, onClose, userType, userId, onLogout }) => {
             <Button type="primary" onClick={handleEdit}>
               {userType === 'customer' ? '회원 정보 수정' : '직원 정보 수정'}
             </Button>
-            <Button type="primary" danger onClick={handleDelete}>
+            <Button type="primary" danger onClick={handleDeleteAccount}>
               {userType === 'customer' ? '회원 탈퇴' : '직원 정보 삭제'}
             </Button>
           </ButtonContainer>

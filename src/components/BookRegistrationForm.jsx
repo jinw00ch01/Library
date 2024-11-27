@@ -3,7 +3,7 @@ import { Form, Input, DatePicker, Button, message, Select } from 'antd';
 import styled from 'styled-components';
 import { adminService } from '../services/api';
 
-const BookRegistrationForm = ({ onClose }) => {
+const BookRegistrationForm = () => {
   const [form] = Form.useForm();
 
   const onFinish = async (values) => {
@@ -14,7 +14,7 @@ const BookRegistrationForm = ({ onClose }) => {
       };
       await adminService.registerBook(formData);
       message.success('도서가 등록되었습니다!');
-      onClose();
+      form.resetFields();
     } catch (error) {
       message.error('도서 등록에 실패했습니다.');
     }
@@ -22,6 +22,7 @@ const BookRegistrationForm = ({ onClose }) => {
 
   return (
     <FormContainer>
+      <h2>신규 도서 등록</h2>
       <Form form={form} layout="vertical" onFinish={onFinish}>
         <Form.Item
           name="Book_name"
@@ -84,6 +85,7 @@ const BookRegistrationForm = ({ onClose }) => {
             <Select.Option value="스페인어">스페인어</Select.Option>
             <Select.Option value="아랍어">아랍어</Select.Option>
             <Select.Option value="힌디어">힌디어</Select.Option>
+            <Select.Option value="기타">기타</Select.Option>
           </Select>
         </Form.Item>
 
@@ -99,19 +101,20 @@ const BookRegistrationForm = ({ onClose }) => {
           <DatePicker style={{ width: '100%' }} />
         </Form.Item>
 
-        <Form.Item name="Book_description" label="도서 설명 (한문장 이내)">
+        <Form.Item name="Book_description" label="도서 설명">
           <Input.TextArea />
         </Form.Item>
 
         <Form.Item
           name="Book_state"
           label="도서 상태"
-          initialValue="좋음"
+          rules={[{ required: true, message: '도서 상태를 선택해주세요' }]}
+          initialValue="대출가능"
         >
           <Select>
-            <Select.Option value="좋음">좋음</Select.Option>
-            <Select.Option value="양호">양호</Select.Option>
-            <Select.Option value="나쁨">나쁨</Select.Option>
+            <Select.Option value="대출가능">대출가능</Select.Option>
+            <Select.Option value="대출중">대출중</Select.Option>
+            <Select.Option value="연체중">연체중</Select.Option>
           </Select>
         </Form.Item>
 

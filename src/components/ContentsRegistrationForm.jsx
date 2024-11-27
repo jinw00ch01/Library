@@ -3,7 +3,7 @@ import { Form, Input, DatePicker, Select, Button, message } from 'antd';
 import styled from 'styled-components';
 import { adminService } from '../services/api';
 
-const ContentsRegistrationForm = ({ onClose, staffId }) => {
+const ContentsRegistrationForm = ({ staffId }) => {
   const [form] = Form.useForm();
 
   const onFinish = async (values) => {
@@ -13,16 +13,21 @@ const ContentsRegistrationForm = ({ onClose, staffId }) => {
         Contents_date: values.Contents_date?.format('YYYY-MM-DD'),
         staff_ID: staffId
       };
+      
+      console.log('전송되는 데이터:', formData);
+      
       await adminService.registerContents(formData);
       message.success('콘텐츠가 등록되었습니다!');
-      onClose();
+      form.resetFields();
     } catch (error) {
+      console.error('등록 실패:', error);
       message.error('콘텐츠 등록에 실패했습니다.');
     }
   };
 
   return (
     <FormContainer>
+      <h2>신규 콘텐츠 등록</h2>
       <Form form={form} layout="vertical" onFinish={onFinish}>
         <Form.Item
           name="Book_ID"
@@ -62,7 +67,11 @@ const ContentsRegistrationForm = ({ onClose, staffId }) => {
           <Input />
         </Form.Item>
 
-        <Form.Item name="Contents_date" label="등록일">
+        <Form.Item
+          name="Contents_date"
+          label="등록일"
+          rules={[{ required: true, message: '등록일을 선택해주세요' }]}
+        >
           <DatePicker style={{ width: '100%' }} />
         </Form.Item>
 
@@ -70,6 +79,7 @@ const ContentsRegistrationForm = ({ onClose, staffId }) => {
           name="Contents_state"
           label="상태"
           initialValue="진행전"
+          rules={[{ required: true, message: '상태를 선택해주세요' }]}
         >
           <Select>
             <Select.Option value="진행전">진행전</Select.Option>
