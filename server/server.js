@@ -491,8 +491,11 @@ app.post('/api/cooperation', async (req, res) => {
       Cooperation_classification
     } = req.body;
 
+    // 받은 데이터 확인
+    console.log('받은 데이터:', req.body);
+
     const query = `
-      INSERT INTO Supply (
+      INSERT INTO Cooperation (
         Cooperation_name,
         Cooperation_address,
         Cooperation_pername,
@@ -501,7 +504,7 @@ app.post('/api/cooperation', async (req, res) => {
       ) VALUES (?, ?, ?, ?, ?)
     `;
 
-    const [result] = await db.query(query, [
+    await db.query(query, [
       Cooperation_name,
       Cooperation_address,
       Cooperation_pername,
@@ -511,10 +514,10 @@ app.post('/api/cooperation', async (req, res) => {
 
     res.json({ 
       success: true, 
-      message: '공급업체가 등록되었습니다.',
-      cooperationId: result.insertId 
+      message: '공급업체가 등록되었습니다.'
     });
   } catch (error) {
+    console.error('공급업체 등록 에러:', error);
     res.status(500).json({ error: error.message });
   }
 });

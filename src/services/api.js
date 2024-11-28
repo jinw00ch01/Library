@@ -97,8 +97,13 @@ export const adminService = {
     return response.data;
   },
   registerCooperation: async (data) => {
-    const response = await axios.post(`${API_BASE_URL}/cooperation`, data);
-    return response.data;
+    try {
+      const response = await axios.post(`${API_BASE_URL}/cooperation`, data);
+      return response.data;
+    } catch (error) {
+      console.error('공급업체 등록 API 에러:', error.response?.data || error.message);
+      throw error;
+    }
   },
   registerContents: async (data) => {
     try {

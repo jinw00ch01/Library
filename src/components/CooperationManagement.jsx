@@ -17,6 +17,7 @@ const CooperationManagement = () => {
   const fetchCooperations = async () => {
     try {
       const response = await adminService.getCooperations();
+      console.log('받은 데이터:', response.cooperations);
       setCooperations(response.cooperations);
     } catch (error) {
       message.error('공급업체 목록을 불러오는데 실패했습니다.');
@@ -69,8 +70,8 @@ const CooperationManagement = () => {
     },
     {
       title: '업체 구분',
-      dataIndex: 'Cooperation_classification',
-      key: 'Cooperation_classification',
+      dataIndex: 'Cooperation_Classification',
+      key: 'Cooperation_Classification',
     },
     {
       title: '작업',
@@ -102,7 +103,7 @@ const CooperationManagement = () => {
             <p><strong>주소:</strong> {selectedCoop?.Cooperation_address}</p>
             <p><strong>담당자명:</strong> {selectedCoop?.Cooperation_pername}</p>
             <p><strong>연락처:</strong> {selectedCoop?.Cooperation_number}</p>
-            <p><strong>업체 구분:</strong> {selectedCoop?.Cooperation_classification}</p>
+            <p><strong>업체 구분:</strong> {selectedCoop?.Cooperation_Classification}</p>
             <Button type="primary" onClick={handleEdit}>공급업체 정보 수정</Button>
             <Button type="danger" onClick={handleDelete} style={{ marginLeft: '10px' }}>공급업체 정보 삭제</Button>
           </>

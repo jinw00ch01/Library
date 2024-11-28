@@ -8,10 +8,14 @@ const CooperationRegistrationForm = ({ onClose }) => {
 
   const onFinish = async (values) => {
     try {
+      console.log('전송할 데이터:', values);
+      
       await adminService.registerCooperation(values);
       message.success('공급업체가 등록되었습니다!');
-      onClose();
+      form.resetFields();
+      if (onClose) onClose();
     } catch (error) {
+      console.error('등록 실패:', error);
       message.error('공급업체 등록에 실패했습니다.');
     }
   };
