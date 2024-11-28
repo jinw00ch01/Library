@@ -267,4 +267,10 @@ export const loanService = {
   getLoanHistory: async (customerId) => {
     return await axios.get(`${API_BASE_URL}/borrow-log/${customerId}`).then((res) => res.data);
   },
+};
+
+export const returnService = {
+  processReturn: async (data) => {
+    return await axios.post(`${API_BASE_URL}/return`, data).then((res) => res.data);
+  },
 }; 

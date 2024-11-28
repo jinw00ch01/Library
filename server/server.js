@@ -683,7 +683,7 @@ app.delete('/api/books/:id', async (req, res) => {
   }
 });
 
-// 부서 목록 조회 API
+// 부서 목록 회 API
 app.get('/api/departments', async (req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM Department');
@@ -972,7 +972,7 @@ app.delete('/api/contents/:id', async (req, res) => {
     await db.query('DELETE FROM Contents WHERE Contents_ID = ?', [contentsId]);
     res.json({ success: true, message: '콘텐츠가 삭제되었습니다.' });
   } catch (error) {
-    console.error('콘텐츠 삭제 에러:', error);
+    console.error('콘텐츠 제 에러:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -1085,6 +1085,74 @@ app.get('/api/borrow-log/:customerId', async (req, res) => {
 
     res.json({ success: true, loans: rows });
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 반납 처리 API
+app.post('/api/return', async (req, res) => {
+  try {
+    const { ReturnLo_ID, Customer_ID, Return_condition, staff_ID, Book_ID } = req.body;
+
+    // 현재 시간을 Return_date로 사용
+    const Return_date = new Date();
+
+    // Return 테이블에 새로운 레코드 추가
+    const insertReturnQuery = `
+      INSERT INTO \`Return\` (ReturnLo_ID, Return_date, Return_condition, staff_ID, Customer_ID, Book_ID)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `;
+
+    const [result] = await db.query(insertReturnQuery, [
+      ReturnLo_ID,
+      Return_date,
+      Return_condition,
+      staff_ID,
+      Customer_ID,
+      Book_ID
+    ]);
+
+    const Return_ID = result.insertId;
+
+    // Borrow_log에서 해당 고객의 반납되지 않은 대출 기록 가져오기
+    const selectBorrowLogQuery = `
+      SELECT Borrow_log_ID
+      FROM Borrow_log
+      WHERE Customer_ID = ? AND Book_ID = ? AND Return_ID IS NULL
+      ORDER BY Borrow_log_ID DESC
+      LIMIT 1
+    `;
+
+    const [borrowLogRows] = await db.query(selectBorrowLogQuery, [Customer_ID, Book_ID]);
+
+    if (borrowLogRows.length === 0) {
+      return res.status(400).json({ error: '반납 가능한 대출 기록이 없습니다.' });
+    }
+
+    const { Borrow_log_ID } = borrowLogRows[0];
+
+    // Borrow_log 업데이트 (Return_ID, ReturnLo_ID)
+    const updateBorrowLogQuery = `
+      UPDATE Borrow_log
+      SET Return_ID = ?, ReturnLo_ID = ?
+      WHERE Borrow_log_ID = ?
+    `;
+
+    await db.query(updateBorrowLogQuery, [Return_ID, ReturnLo_ID, Borrow_log_ID]);
+
+    // Book 상태를 '대출가능'으로 변경
+    const updateBookQuery = `
+      UPDATE Book
+      SET Book_state = '대출가능'
+      WHERE Book_ID = ?
+    `;
+
+    await db.query(updateBookQuery, [Book_ID]);
+
+    res.json({ success: true, message: '반납 처리가 완료되었습니다.' });
+
+  } catch (error) {
+    console.error('반납 처리 중 오류 발생:', error);
     res.status(500).json({ error: error.message });
   }
 });

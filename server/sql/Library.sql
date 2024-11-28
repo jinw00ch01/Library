@@ -72,8 +72,8 @@ CREATE TABLE `Borrow_log` (
 	`borrow_ID`	INT	NOT NULL,
 	`Customer_ID`	INT	NOT NULL,
 	`Book_ID`	INT	NOT NULL,
-	`Return_ID`	INT	NOT NULL,
-	`ReturnLo_ID`	INT	NOT NULL
+	`Return_ID`	INT	NULL,
+	`ReturnLo_ID`	INT	NULL
 );
 
 CREATE TABLE `Cust_Cont` (
@@ -111,7 +111,13 @@ CREATE TABLE `Return` (
 	`Return_date`	DATE	NULL,
 	`Return_condition`	VARCHAR(10)	NULL,
 	`staff_ID`	INT	NOT NULL,
-	`Customer_ID`	INT	NOT NULL
+	`Customer_ID`	INT	NOT NULL,
+	`Book_ID`	INT	NOT NULL,
+	PRIMARY KEY (`Return_ID`),
+	FOREIGN KEY (`ReturnLo_ID`) REFERENCES `ReturnLo` (`ReturnLo_ID`),
+	FOREIGN KEY (`staff_ID`) REFERENCES `Staff` (`staff_ID`),
+	FOREIGN KEY (`Customer_ID`) REFERENCES `Customer` (`Customer_ID`),
+	FOREIGN KEY (`Book_ID`) REFERENCES `Book` (`Book_ID`)
 );
 
 CREATE TABLE `Review` (

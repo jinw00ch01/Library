@@ -27,6 +27,7 @@ import ContentsManagement from './components/ContentsManagement';
 import MediaManagement from './components/MediaManagement';
 import LoanProcessing from './components/LoanProcessing';
 import LoanHistory from './components/LoanHistory';
+import ReturnProcessing from './components/ReturnProcessing';
 
 const { Header, Content, Footer } = Layout;
 
@@ -346,6 +347,7 @@ const App = () => {
         {currentContent === 'registerMedia' && <MediaRegistrationForm staffId={user?.id} />}
         {currentContent === 'manageMedia' && <MediaManagement />}
         {currentContent === 'loanProcess' && <LoanProcessing staffId={user?.id} />}
+        {currentContent === 'returnProcess' && <ReturnProcessing staffId={user?.id} />}
         {currentContent === 'viewLoanHistory' && <LoanHistory customerId={user?.id} />}
       </ContentArea>
 
