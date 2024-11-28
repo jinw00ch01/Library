@@ -126,11 +126,14 @@ CREATE TABLE `Review` (
 	`Review_rating`	INT	NULL,
 	`Review_text`	VARCHAR(255)	NULL,
 	`Review_date`	DATE	NULL,
-	`Review_upvotes`	INT	NULL,
-	`Review_issues`	INT	NULL,
-	`staff_ID`	INT	NOT NULL,
+	`Review_upvotes`	INT	DEFAULT 0,
+	`Review_issues`	INT	DEFAULT 0,
+	`staff_ID`	INT	NULL,
 	`Customer_ID`	INT	NOT NULL,
-	`Book_ID`	INT	NOT NULL
+	`Book_ID`	INT	NOT NULL,
+	PRIMARY KEY (`Review_ID`),
+	FOREIGN KEY (`Customer_ID`) REFERENCES `Customer` (`Customer_ID`),
+	FOREIGN KEY (`Book_ID`) REFERENCES `Book` (`Book_ID`)
 );
 
 CREATE TABLE `ReturnLo` (

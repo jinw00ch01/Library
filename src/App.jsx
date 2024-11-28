@@ -28,6 +28,7 @@ import MediaManagement from './components/MediaManagement';
 import LoanProcessing from './components/LoanProcessing';
 import LoanHistory from './components/LoanHistory';
 import ReturnProcessing from './components/ReturnProcessing';
+import BookSearch from './components/BookSearch';
 
 const { Header, Content, Footer } = Layout;
 
@@ -349,6 +350,7 @@ const App = () => {
         {currentContent === 'loanProcess' && <LoanProcessing staffId={user?.id} />}
         {currentContent === 'returnProcess' && <ReturnProcessing staffId={user?.id} />}
         {currentContent === 'viewLoanHistory' && <LoanHistory customerId={user?.id} />}
+        {currentContent === 'searchBooks' && <BookSearch />}
       </ContentArea>
 
       <Modal

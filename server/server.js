@@ -7,11 +7,21 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 예시 API 엔드포인트
+// 로그인한 사용자 정보를 req.user에 추가하는 미들웨어
+app.use((req, res, next) => {
+  // 실제로는 JWT 또는 세션을 사용하여 사용자 인증을 구현해야 합니다.
+  req.user = {
+    id: req.headers['x-user-id'],
+    type: req.headers['x-user-type']
+  };
+  next();
+});
+
+// 도서 목록 조회 API
 app.get('/api/books', async (req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM Book');
-    res.json(rows);
+    res.json({ success: true, books: rows });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -1153,6 +1163,126 @@ app.post('/api/return', async (req, res) => {
 
   } catch (error) {
     console.error('반납 처리 중 오류 발생:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 특정 도서의 리뷰 목록 조회 API
+app.get('/api/books/:id/reviews', async (req, res) => {
+  try {
+    const bookId = req.params.id;
+    const query = `
+      SELECT r.*, c.Customer_name,
+             r.Customer_ID = ? AS isOwn
+      FROM Review r
+      JOIN Customer c ON r.Customer_ID = c.Customer_ID
+      WHERE r.Book_ID = ?
+    `;
+    const [rows] = await db.query(query, [req.user?.id || 0, bookId]);
+    res.json({ success: true, reviews: rows });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 리뷰 작성 API
+app.post('/api/books/:id/reviews', async (req, res) => {
+  try {
+    if (!req.user || req.user.type !== 'customer') {
+      return res.status(401).json({ error: '로그인이 필요합니다.' });
+    }
+
+    const bookId = req.params.id;
+    const {
+      Review_title,
+      Review_rating,
+      Review_text
+    } = req.body;
+
+    const query = `
+      INSERT INTO Review (
+        Review_title,
+        Review_rating,
+        Review_text,
+        Review_date,
+        Review_upvotes,
+        Review_issues,
+        staff_ID,
+        Customer_ID,
+        Book_ID
+      ) VALUES (?, ?, ?, CURDATE(), 0, 0, NULL, ?, ?)
+    `;
+
+    await db.query(query, [
+      Review_title,
+      Review_rating,
+      Review_text,
+      req.user.id,
+      bookId
+    ]);
+
+    res.json({ success: true, message: '리뷰가 등록되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 리뷰 추천 API
+app.post('/api/reviews/:id/upvote', async (req, res) => {
+  try {
+    if (!req.user || req.user.type !== 'customer') {
+      return res.status(401).json({ error: '로그인이 필요합니다.' });
+    }
+
+    const reviewId = req.params.id;
+
+    // 자신의 리뷰인지 확인
+    const [rows] = await db.query('SELECT Customer_ID FROM Review WHERE Review_ID = ?', [reviewId]);
+    if (rows.length === 0) {
+      return res.status(404).json({ error: '리뷰를 찾을 수 없습니다.' });
+    }
+    if (rows[0].Customer_ID === req.user.id) {
+      return res.status(400).json({ error: '자신의 리뷰는 추천할 수 없습니다.' });
+    }
+
+    const query = `
+      UPDATE Review
+      SET Review_upvotes = Review_upvotes + 1
+      WHERE Review_ID = ?
+    `;
+    await db.query(query, [reviewId]);
+    res.json({ success: true, message: '추천이 반영되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 리뷰 신고 API
+app.post('/api/reviews/:id/report', async (req, res) => {
+  try {
+    if (!req.user || req.user.type !== 'customer') {
+      return res.status(401).json({ error: '로그인이 필요합니다.' });
+    }
+
+    const reviewId = req.params.id;
+
+    // 자신의 리뷰인지 확인
+    const [rows] = await db.query('SELECT Customer_ID FROM Review WHERE Review_ID = ?', [reviewId]);
+    if (rows.length === 0) {
+      return res.status(404).json({ error: '리뷰를 찾을 수 없습니다.' });
+    }
+    if (rows[0].Customer_ID === req.user.id) {
+      return res.status(400).json({ error: '자신의 리뷰는 신고할 수 없습니다.' });
+    }
+
+    const query = `
+      UPDATE Review
+      SET Review_issues = Review_issues + 1
+      WHERE Review_ID = ?
+    `;
+    await db.query(query, [reviewId]);
+    res.json({ success: true, message: '신고가 접수되었습니다.' });
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
