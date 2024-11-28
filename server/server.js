@@ -1029,6 +1029,66 @@ app.delete('/api/medias/:id', async (req, res) => {
   }
 });
 
+// 대출 처리 API
+app.post('/api/borrow', async (req, res) => {
+  try {
+    const { Customer_ID, Book_ID, staff_ID } = req.body;
+
+    // 현재 시간을 borrow_Date로 사용
+    const borrow_Date = new Date();
+
+    // Borrow 테이블에 새로운 레코드 추가
+    const query = `
+      INSERT INTO Borrow (Customer_ID, Book_ID, borrow_Date, staff_ID)
+      VALUES (?, ?, ?, ?)
+    `;
+    const [result] = await db.query(query, [Customer_ID, Book_ID, borrow_Date, staff_ID]);
+    const borrow_ID = result.insertId;
+
+    // Borrow_log에 데이터 추가
+    const borrowLogQuery = `
+      INSERT INTO Borrow_log (borrow_ID, Customer_ID, Book_ID, Return_ID, ReturnLo_ID)
+      VALUES (?, ?, ?, NULL, NULL)
+    `;
+    await db.query(borrowLogQuery, [borrow_ID, Customer_ID, Book_ID]);
+
+    // 해당 도서의 상태를 '대출중'으로 업데이트
+    const updateBookQuery = `
+      UPDATE Book
+      SET Book_state = '대출중'
+      WHERE Book_ID = ?
+    `;
+    await db.query(updateBookQuery, [Book_ID]);
+
+    res.json({ success: true, message: '대출 처리가 완료되었습니다.' });
+  } catch (error) {
+    console.error('대출 처리 중 오류 발생:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 고객 대출 내역 조회 API
+app.get('/api/borrow-log/:customerId', async (req, res) => {
+  try {
+    const customerId = req.params.customerId;
+
+    const query = `
+      SELECT 
+        Borrow_log_ID, 
+        Book_ID, 
+        IF(Return_ID IS NULL, '아니오', '예') AS Return_Status
+      FROM Borrow_log
+      WHERE Customer_ID = ?
+    `;
+
+    const [rows] = await db.query(query, [customerId]);
+
+    res.json({ success: true, loans: rows });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.get('/', (req, res) => {
   res.json({ message: '도서관 관리 시스템 API 서버' });
 });

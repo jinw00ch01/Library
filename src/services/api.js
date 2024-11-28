@@ -258,4 +258,13 @@ export const userService = {
     const response = await axios.delete(`${API_BASE_URL}/${userType}/${userId}`);
     return response.data;
   }
+};
+
+export const loanService = {
+  processLoan: async (data) => {
+    return await axios.post(`${API_BASE_URL}/borrow`, data).then((res) => res.data);
+  },
+  getLoanHistory: async (customerId) => {
+    return await axios.get(`${API_BASE_URL}/borrow-log/${customerId}`).then((res) => res.data);
+  },
 }; 

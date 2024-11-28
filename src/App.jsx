@@ -25,6 +25,8 @@ import SupplyRegistrationForm from './components/SupplyRegistrationForm';
 import SupplyManagement from './components/SupplyManagement';
 import ContentsManagement from './components/ContentsManagement';
 import MediaManagement from './components/MediaManagement';
+import LoanProcessing from './components/LoanProcessing';
+import LoanHistory from './components/LoanHistory';
 
 const { Header, Content, Footer } = Layout;
 
@@ -156,6 +158,19 @@ const App = () => {
             onClick: () => setCurrentContent('searchMedia'),
           },
         ]
+      : user && userType === 'staff'
+      ? [
+          {
+            key: 'loanProcess',
+            label: '대출 처리',
+            onClick: () => setCurrentContent('loanProcess'),
+          },
+          {
+            key: 'returnProcess',
+            label: '반납 처리',
+            onClick: () => setCurrentContent('returnProcess'),
+          },
+        ]
       : []),
   ];
 
@@ -285,6 +300,14 @@ const App = () => {
     </VerticalMenu>
   );
 
+  const customerVerticalMenu = () => (
+    <VerticalMenu>
+      <Button type="text" onClick={() => setCurrentContent('viewLoanHistory')}>대출 내역 조회</Button>
+      <Button type="text" onClick={() => setCurrentContent('viewOverdueHistory')}>연체 내역 조회</Button>
+      <Button type="text" onClick={() => setCurrentContent('viewReservations')}>예약 조회</Button>
+    </VerticalMenu>
+  );
+
   return (
     <StyledLayout>
       <StyledHeader>
@@ -298,6 +321,7 @@ const App = () => {
       </StyledHeader>
 
       {user && userType === 'staff' && staffVerticalMenu()}
+      {user && userType === 'customer' && customerVerticalMenu()}
 
       <ContentArea>
         {currentContent === 'home' && (
@@ -321,6 +345,8 @@ const App = () => {
         {currentContent === 'manageContents' && <ContentsManagement />}
         {currentContent === 'registerMedia' && <MediaRegistrationForm staffId={user?.id} />}
         {currentContent === 'manageMedia' && <MediaManagement />}
+        {currentContent === 'loanProcess' && <LoanProcessing staffId={user?.id} />}
+        {currentContent === 'viewLoanHistory' && <LoanHistory customerId={user?.id} />}
       </ContentArea>
 
       <Modal

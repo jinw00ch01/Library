@@ -200,9 +200,9 @@ const BookManagement = () => {
             </Form.Item>
             <Form.Item name="Book_state" label="상태" rules={[{ required: true }]}>
               <Select>
-                <Select.Option value="좋음">좋음</Select.Option>
-                <Select.Option value="보통">보통</Select.Option>
-                <Select.Option value="나쁨">나쁨</Select.Option>
+                <Select.Option value="대출가능">대출가능</Select.Option>
+                <Select.Option value="대출중">대출중</Select.Option>
+                <Select.Option value="연체중">연체중</Select.Option>
               </Select>
             </Form.Item>
             <ButtonContainer>

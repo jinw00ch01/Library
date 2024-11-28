@@ -88,7 +88,7 @@ CREATE TABLE `Cooperation` (
 	`Cooperation_name`	VARCHAR(255)	NULL,
 	`Cooperation_address`	VARCHAR(255)	NULL,
 	`Cooperation_pername`	VARCHAR(255)	NULL,
-	`Cooperation_number`	CHAR(20)	NULL,
+	`Cooperation_number`	VARCHAR(30)	NULL,
 	`Cooperation_classification`	VARCHAR(10)	NULL
 );
 
