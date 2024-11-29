@@ -28,7 +28,7 @@ const UserInfoModal = ({ visible, onClose, userType, userId, onLogout }) => {
     form.setFieldsValue({
       ...userInfo,
       ...(userType === 'customer' && {
-        birthdate: userInfo.Customer_birthdate ? dayjs(userInfo.Customer_birthdate) : null,
+        Customer_birthdate: userInfo.Customer_birthdate ? dayjs(userInfo.Customer_birthdate) : undefined,
       }),
     });
     setIsEditMode(true);
@@ -36,12 +36,24 @@ const UserInfoModal = ({ visible, onClose, userType, userId, onLogout }) => {
 
   const handleUpdate = async (values) => {
     try {
-      await userService.updateUserInfo(userType, userId, values);
+      let updateData = { ...values };
+
+      if (userType === 'customer') {
+        updateData = {
+          ...values,
+          Customer_birthdate: values.Customer_birthdate
+            ? values.Customer_birthdate.format('YYYY-MM-DD')
+            : null,
+        };
+      }
+
+      await userService.updateUserInfo(userType, userId, updateData);
       message.success('정보가 수정되었습니다.');
       setIsEditMode(false);
       fetchUserInfo();
     } catch (error) {
       message.error('정보 수정에 실패했습니다.');
+      console.error('정보 수정 오류:', error);
     }
   };
 
@@ -120,7 +132,7 @@ const UserInfoModal = ({ visible, onClose, userType, userId, onLogout }) => {
             <Input />
           </Form.Item>
           <Form.Item name="Customer_birthdate" label="생년월일">
-            <DatePicker />
+            <DatePicker allowClear />
           </Form.Item>
           <ButtonContainer>
             <Button type="primary" htmlType="submit">저장</Button>
