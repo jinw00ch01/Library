@@ -80,7 +80,11 @@ CREATE TABLE `Cust_Cont` (
 	`Cust_Cont_ID`	INT	NOT NULL AUTO_INCREMENT,
 	`Customer_ID`	INT	NOT NULL,
 	`Contents_ID`	INT	NOT NULL,
-	`Book_ID`	INT	NOT NULL
+	`Book_ID`	INT	NOT NULL,
+	PRIMARY KEY (`Cust_Cont_ID`),
+	FOREIGN KEY (`Customer_ID`) REFERENCES `Customer` (`Customer_ID`),
+	FOREIGN KEY (`Contents_ID`) REFERENCES `Contents` (`Contents_ID`),
+	FOREIGN KEY (`Book_ID`) REFERENCES `Book` (`Book_ID`)
 );
 
 CREATE TABLE `Cooperation` (

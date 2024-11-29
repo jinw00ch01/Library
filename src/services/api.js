@@ -337,4 +337,23 @@ export const reviewService = {
     const response = await axiosInstance.post(`/reviews/${reviewId}/unblind`);
     return response.data;
   },
+};
+
+export const contentsService = {
+  getAllContents: async () => {
+    const response = await axiosInstance.get('/contents');
+    return response.data;
+  },
+  participate: async (contentsId) => {
+    const response = await axiosInstance.post(`/contents/${contentsId}/participate`);
+    return response.data;
+  },
+  getParticipations: async (customerId) => {
+    const response = await axiosInstance.get(`/customers/${customerId}/participations`);
+    return response.data;
+  },
+  cancelParticipation: async (customerId, contentsId) => {
+    const response = await axiosInstance.delete(`/customers/${customerId}/participations/${contentsId}`);
+    return response.data;
+  },
 }; 

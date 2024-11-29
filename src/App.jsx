@@ -30,6 +30,8 @@ import LoanHistory from './components/LoanHistory';
 import ReturnProcessing from './components/ReturnProcessing';
 import BookSearch from './components/BookSearch';
 import ReviewReportManagement from './components/ReviewReportManagement';
+import ContentsSearch from './components/ContentsSearch';
+import CustContParticipationList from './components/CustContParticipationList';
 
 const { Header, Content, Footer } = Layout;
 
@@ -306,6 +308,7 @@ const App = () => {
   const customerVerticalMenu = () => (
     <VerticalMenu>
       <Button type="text" onClick={() => setCurrentContent('viewLoanHistory')}>대출 내역 조회</Button>
+      <Button type="text" onClick={() => setCurrentContent('viewParticipations')}>콘텐츠 참여 내역 조회</Button>
       <Button type="text" onClick={() => setCurrentContent('viewOverdueHistory')}>연체 내역 조회</Button>
       <Button type="text" onClick={() => setCurrentContent('viewReservations')}>예약 조회</Button>
     </VerticalMenu>
@@ -352,6 +355,8 @@ const App = () => {
         {currentContent === 'returnProcess' && <ReturnProcessing staffId={user?.id} />}
         {currentContent === 'viewLoanHistory' && <LoanHistory customerId={user?.id} />}
         {currentContent === 'searchBooks' && <BookSearch />}
+        {currentContent === 'searchContents' && <ContentsSearch />}
+        {currentContent === 'viewParticipations' && <CustContParticipationList customerId={user?.id} />}
         {currentContent === 'manageReviews' && <ReviewReportManagement />}
       </ContentArea>
 

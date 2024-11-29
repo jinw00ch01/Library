@@ -732,7 +732,7 @@ app.put('/api/departments/:id', async (req, res) => {
   }
 });
 
-// 부서 삭제 API
+// 부�� 삭제 API
 app.delete('/api/departments/:id', async (req, res) => {
   try {
     const departmentId = req.params.id;
@@ -928,10 +928,15 @@ app.delete('/api/supplies/:id', async (req, res) => {
   }
 });
 
-// 콘텐츠 목록 조회 API
+// 콘텐츠 목록 조회 API 수정 (콘텐츠와 도서명 조인)
 app.get('/api/contents', async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM Contents');
+    const query = `
+      SELECT c.*, b.Book_name
+      FROM Contents c
+      JOIN Book b ON c.Book_ID = b.Book_ID
+    `;
+    const [rows] = await db.query(query);
     res.json({ success: true, contents: rows });
   } catch (error) {
     console.error('콘텐츠 조회 에러:', error);
@@ -939,49 +944,85 @@ app.get('/api/contents', async (req, res) => {
   }
 });
 
-// 콘텐츠 정보 수정 API
-app.put('/api/contents/:id', async (req, res) => {
+// 콘텐츠 참여 API
+app.post('/api/contents/:id/participate', async (req, res) => {
   try {
+    if (!req.user || req.user.type !== 'customer') {
+      return res.status(401).json({ error: '로그인이 필요합니다.' });
+    }
     const contentsId = req.params.id;
-    const { Book_ID, Contents_type, Contents_name, Contents_author, Contents_date, Contents_state } = req.body;
+    const customerId = Number(req.user.id);
 
-    const query = `
-      UPDATE Contents
-      SET
-        Book_ID = ?,
-        Contents_type = ?,
-        Contents_name = ?,
-        Contents_author = ?,
-        Contents_date = ?,
-        Contents_state = ?
-      WHERE Contents_ID = ?
-    `;
+    // 콘텐츠 상태 확인
+    const [contentsRows] = await db.query(
+      'SELECT Contents_state, Book_ID FROM Contents WHERE Contents_ID = ?',
+      [contentsId]
+    );
+    if (contentsRows.length === 0) {
+      return res.status(404).json({ error: '콘텐츠를 찾을 수 없습니다.' });
+    }
+    const { Contents_state, Book_ID } = contentsRows[0];
+    if (Contents_state !== '진행전') {
+      return res.status(400).json({ error: '참여할 수 없는 상태의 콘텐츠입니다.' });
+    }
 
-    await db.query(query, [
-      Book_ID,
-      Contents_type,
-      Contents_name,
-      Contents_author,
-      Contents_date,
-      Contents_state,
-      contentsId
-    ]);
+    // 이미 참여했는지 확인
+    const [existing] = await db.query(
+      'SELECT * FROM Cust_Cont WHERE Customer_ID = ? AND Contents_ID = ?',
+      [customerId, contentsId]
+    );
+    if (existing.length > 0) {
+      return res.status(400).json({ error: '이미 참여한 콘텐츠입니다.' });
+    }
 
-    res.json({ success: true, message: '콘텐츠 정보가 수정되었습니다.' });
+    // 참여 기록 생성
+    await db.query(
+      'INSERT INTO Cust_Cont (Customer_ID, Contents_ID, Book_ID) VALUES (?, ?, ?)',
+      [customerId, contentsId, Book_ID]
+    );
+
+    res.json({ success: true, message: '콘텐츠에 참여하였습니다.' });
   } catch (error) {
-    console.error('콘텐츠 수정 에러:', error);
+    console.error('콘텐츠 참여 에러:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// 콘텐츠 삭제 API
-app.delete('/api/contents/:id', async (req, res) => {
+// 고객의 콘텐츠 참여 내역 조회 API
+app.get('/api/customers/:id/participations', async (req, res) => {
   try {
-    const contentsId = req.params.id;
-    await db.query('DELETE FROM Contents WHERE Contents_ID = ?', [contentsId]);
-    res.json({ success: true, message: '콘텐츠가 삭제되었습니다.' });
+    const customerId = req.params.id;
+
+    const query = `
+      SELECT cc.*, c.Contents_name, b.Book_name
+      FROM Cust_Cont cc
+      JOIN Contents c ON cc.Contents_ID = c.Contents_ID
+      JOIN Book b ON cc.Book_ID = b.Book_ID
+      WHERE cc.Customer_ID = ?
+    `;
+    const [rows] = await db.query(query, [customerId]);
+
+    res.json({ success: true, participations: rows });
   } catch (error) {
-    console.error('콘텐츠 제 에러:', error);
+    console.error('참여 내역 조회 에러:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 콘텐츠 참여 취소 API
+app.delete('/api/customers/:customerId/participations/:contentsId', async (req, res) => {
+  try {
+    const customerId = req.params.customerId;
+    const contentsId = req.params.contentsId;
+
+    await db.query(
+      'DELETE FROM Cust_Cont WHERE Customer_ID = ? AND Contents_ID = ?',
+      [customerId, contentsId]
+    );
+
+    res.json({ success: true, message: '참여가 취소되었습니다.' });
+  } catch (error) {
+    console.error('참여 취소 에러:', error);
     res.status(500).json({ error: error.message });
   }
 });
