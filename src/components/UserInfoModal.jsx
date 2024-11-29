@@ -3,6 +3,14 @@ import { Modal, Descriptions, Button, Form, Input, Select, DatePicker, message }
 import { userService } from '../services/api';
 import dayjs from 'dayjs';
 import styled from 'styled-components';
+import axios from 'axios';
+
+const axiosInstance = axios.create({
+  baseURL: '/api',
+  headers: {
+    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+  },
+});
 
 const UserInfoModal = ({ visible, onClose, userType, userId, onLogout }) => {
   const [userInfo, setUserInfo] = useState(null);
@@ -59,17 +67,27 @@ const UserInfoModal = ({ visible, onClose, userType, userId, onLogout }) => {
 
   const handleDeleteAccount = () => {
     Modal.confirm({
-      title: '직원 정보 삭제',
+      title: userType === 'customer' ? '회원 탈퇴' : '직원 정보 삭제',
       content: '정말 삭제 하시겠습니까?',
       okText: '예',
       cancelText: '아니오',
       onOk: async () => {
         try {
-          await userService.deleteStaff(userId);
-          message.success('직원 정보가 삭제되었습니다.');
+          if (userType === 'customer') {
+            await userService.deleteCustomer(userId);
+            message.success('회원 탈퇴가 완료되었습니다.');
+          } else {
+            await userService.deleteStaff(userId);
+            message.success('직원 정보가 삭제되었습니다.');
+          }
           onLogout();
         } catch (error) {
-          message.error('직원 정보 삭제에 실패하였습니다.');
+          if (userType === 'customer') {
+            message.error('회원 탈퇴에 실패하였습니다.');
+          } else {
+            message.error('직원 정보 삭제에 실패하였습니다.');
+          }
+          console.error('삭제 오류:', error);
         }
       },
     });

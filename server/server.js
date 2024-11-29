@@ -307,9 +307,11 @@ app.put('/api/staff/:id', async (req, res) => {
 // 직원 정보 삭제 API
 app.delete('/api/staff/:id', async (req, res) => {
   try {
-    await db.query('DELETE FROM Staff WHERE staff_ID = ?', [req.params.id]);
-    res.json({ message: '직원 정보가 삭제되었습니다.' });
+    const staffId = req.params.id;
+    await db.query('DELETE FROM Staff WHERE staff_ID = ?', [staffId]);
+    res.json({ success: true, message: '직원 정보가 삭제되었습니다.' });
   } catch (error) {
+    console.error('직원 탈퇴 중 오류 발생:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -355,6 +357,7 @@ app.delete('/api/customer/:id', async (req, res) => {
     await db.query('DELETE FROM Customer WHERE Customer_ID = ?', [customerId]);
     res.json({ success: true, message: '회원 탈퇴가 완료되었습니다.' });
   } catch (error) {
+    console.error('고객 탈퇴 중 오류 발생:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -366,6 +369,7 @@ app.delete('/api/staff/:id', async (req, res) => {
     await db.query('DELETE FROM Staff WHERE staff_ID = ?', [staffId]);
     res.json({ success: true, message: '직원 정보가 삭제되었습니다.' });
   } catch (error) {
+    console.error('직원 탈퇴 중 오류 발생:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -732,7 +736,7 @@ app.put('/api/departments/:id', async (req, res) => {
   }
 });
 
-// 부 삭제 API
+// 부서 삭제 API
 app.delete('/api/departments/:id', async (req, res) => {
   try {
     const departmentId = req.params.id;
@@ -1220,7 +1224,7 @@ app.get('/api/books/:id/reviews', async (req, res) => {
     const [upvotes] = await db.query(upvoteQuery, [customerId]);
     const upvoteIds = upvotes.map((u) => u.Review_ID);
 
-    // 사용자가 이미 신고한 리뷰 ID 목록 가져오기
+    // 사용자가 이미 신고한 리 ID 목록 가져오기
     const reportQuery = `
       SELECT Review_ID FROM ReviewReports WHERE Customer_ID = ?
     `;
@@ -1469,7 +1473,7 @@ app.post('/api/reviews/:id/unblind', async (req, res) => {
 
     const reviewId = req.params.id;
 
-    // 원본 리뷰 복원
+    // 원��� 리뷰 복원
     await db.query(
       'UPDATE Review SET Review_title = Original_title, Review_text = Original_text, isBlinded = 0, Original_title = NULL, Original_text = NULL WHERE Review_ID = ?',
       [reviewId]

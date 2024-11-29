@@ -278,7 +278,9 @@ export const userService = {
   deleteUser: async (userType, userId) => {
     const response = await axiosInstance.delete(`/${userType}/${userId}`);
     return response.data;
-  }
+  },
+  deleteStaff: (staffId) => axiosInstance.delete(`/staff/${staffId}`),
+  deleteCustomer: (customerId) => axiosInstance.delete(`/customer/${customerId}`)
 };
 
 export const loanService = {
