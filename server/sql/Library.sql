@@ -131,6 +131,9 @@ CREATE TABLE `Review` (
 	`staff_ID`	INT	NULL,
 	`Customer_ID`	INT	NOT NULL,
 	`Book_ID`	INT	NOT NULL,
+	`isBlinded`	TINYINT(1) DEFAULT 0,
+	`Original_title`	VARCHAR(255) NULL,
+	`Original_text`	VARCHAR(255) NULL,
 	PRIMARY KEY (`Review_ID`),
 	FOREIGN KEY (`Customer_ID`) REFERENCES `Customer` (`Customer_ID`),
 	FOREIGN KEY (`Book_ID`) REFERENCES `Book` (`Book_ID`)
@@ -183,6 +186,22 @@ CREATE TABLE `Current_status` (
 	`Customer_ID`	INT	NOT NULL,
 	`Book_ID`	INT	NOT NULL,
 	`Overdue_ID`	INT	NOT NULL
+);
+
+CREATE TABLE `ReviewUpvotes` (
+	`Review_ID` INT NOT NULL,
+	`Customer_ID` INT NOT NULL,
+	PRIMARY KEY (`Review_ID`, `Customer_ID`),
+	FOREIGN KEY (`Review_ID`) REFERENCES `Review` (`Review_ID`) ON DELETE CASCADE,
+	FOREIGN KEY (`Customer_ID`) REFERENCES `Customer` (`Customer_ID`) ON DELETE CASCADE
+);
+
+CREATE TABLE `ReviewReports` (
+	`Review_ID` INT NOT NULL,
+	`Customer_ID` INT NOT NULL,
+	PRIMARY KEY (`Review_ID`, `Customer_ID`),
+	FOREIGN KEY (`Review_ID`) REFERENCES `Review` (`Review_ID`) ON DELETE CASCADE,
+	FOREIGN KEY (`Customer_ID`) REFERENCES `Customer` (`Customer_ID`) ON DELETE CASCADE
 );
 
 ALTER TABLE `Borrow_log` ADD CONSTRAINT `PK_BORROW_LOG` PRIMARY KEY (

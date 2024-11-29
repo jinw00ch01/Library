@@ -2,18 +2,23 @@ import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:3001/api';
 
-// 사용자 정보 가져오기
-const user = JSON.parse(localStorage.getItem('user'));
-const userType = localStorage.getItem('userType');
-
-// axios 인스턴스 생성 시 기본 헤더 설정
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'x-user-id': user?.id || '',
-    'x-user-type': userType || '',
-  },
 });
+
+// 요청 인터셉터 설정
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    const userType = localStorage.getItem('userType');
+    if (user && userType) {
+      config.headers['x-user-id'] = user.id;
+      config.headers['x-user-type'] = userType;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 export const bookService = {
   getAllBooks: async () => {
@@ -308,5 +313,28 @@ export const reviewService = {
     const response = await axiosInstance.post(`/reviews/${reviewId}/report`);
     return response.data;
   },
-  // ... 필요에 따라 다른 메서드 추가 ...
+  getReportedReviews: async () => {
+    const response = await axiosInstance.get('/reviews/reported');
+    return response.data;
+  },
+  deleteReview: async (reviewId) => {
+    const response = await axiosInstance.delete(`/reviews/${reviewId}`);
+    return response.data;
+  },
+  deleteOwnReview: async (reviewId) => {
+    const response = await axiosInstance.delete(`/reviews/${reviewId}`);
+    return response.data;
+  },
+  updateReview: async (reviewId, data) => {
+    const response = await axiosInstance.put(`/reviews/${reviewId}`, data);
+    return response.data;
+  },
+  blindReview: async (reviewId) => {
+    const response = await axiosInstance.post(`/reviews/${reviewId}/blind`);
+    return response.data;
+  },
+  unblindReview: async (reviewId) => {
+    const response = await axiosInstance.post(`/reviews/${reviewId}/unblind`);
+    return response.data;
+  },
 }; 

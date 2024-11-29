@@ -29,6 +29,7 @@ import LoanProcessing from './components/LoanProcessing';
 import LoanHistory from './components/LoanHistory';
 import ReturnProcessing from './components/ReturnProcessing';
 import BookSearch from './components/BookSearch';
+import ReviewReportManagement from './components/ReviewReportManagement';
 
 const { Header, Content, Footer } = Layout;
 
@@ -205,7 +206,7 @@ const App = () => {
   const handleLoginSuccess = (userData, type) => {
     const userWithType = {
       ...userData,
-      type: type
+      type: type,
     };
     setUser(userWithType);
     setUserType(type);
@@ -351,6 +352,7 @@ const App = () => {
         {currentContent === 'returnProcess' && <ReturnProcessing staffId={user?.id} />}
         {currentContent === 'viewLoanHistory' && <LoanHistory customerId={user?.id} />}
         {currentContent === 'searchBooks' && <BookSearch />}
+        {currentContent === 'manageReviews' && <ReviewReportManagement />}
       </ContentArea>
 
       <Modal

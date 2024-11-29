@@ -9,10 +9,9 @@ app.use(express.json());
 
 // 로그인한 사용자 정보를 req.user에 추가하는 미들웨어
 app.use((req, res, next) => {
-  // 실제로는 JWT 또는 세션을 사용하여 사용자 인증을 구현해야 합니다.
   req.user = {
     id: req.headers['x-user-id'],
-    type: req.headers['x-user-type']
+    type: req.headers['x-user-type'],
   };
   next();
 });
@@ -343,7 +342,7 @@ app.put('/api/customer/:id', async (req, res) => {
       customerId,
     ]);
 
-    res.json({ success: true, message: '회원정보가 수정되었습니다.' });
+    res.json({ success: true, message: '회원정보가 정되었습니다.' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -1167,19 +1166,285 @@ app.post('/api/return', async (req, res) => {
   }
 });
 
-// 특정 도서의 리뷰 목록 조회 API
+// 특정 도서의 리뷰 목록 조회 API 수정
 app.get('/api/books/:id/reviews', async (req, res) => {
   try {
     const bookId = req.params.id;
-    const query = `
+    const customerId = req.user?.id || 0;
+
+    const reviewQuery = `
       SELECT r.*, c.Customer_name,
-             r.Customer_ID = ? AS isOwn
+             r.Customer_ID = ? AS isOwn,
+             r.isBlinded
       FROM Review r
       JOIN Customer c ON r.Customer_ID = c.Customer_ID
       WHERE r.Book_ID = ?
     `;
-    const [rows] = await db.query(query, [req.user?.id || 0, bookId]);
-    res.json({ success: true, reviews: rows });
+    const [reviews] = await db.query(reviewQuery, [customerId, bookId]);
+
+    // 사용자가 이미 추천한 리뷰 ID 목록 가져오기
+    const upvoteQuery = `
+      SELECT Review_ID FROM ReviewUpvotes WHERE Customer_ID = ?
+    `;
+    const [upvotes] = await db.query(upvoteQuery, [customerId]);
+    const upvoteIds = upvotes.map((u) => u.Review_ID);
+
+    // 사용자가 이미 신고한 리뷰 ID 목록 가져오기
+    const reportQuery = `
+      SELECT Review_ID FROM ReviewReports WHERE Customer_ID = ?
+    `;
+    const [reports] = await db.query(reportQuery, [customerId]);
+    const reportIds = reports.map((r) => r.Review_ID);
+
+    res.json({
+      success: true,
+      reviews,
+      upvotes: upvoteIds,
+      reports: reportIds,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 리뷰 추천 API 수정
+app.post('/api/reviews/:id/upvote', async (req, res) => {
+  try {
+    if (!req.user || req.user.type !== 'customer') {
+      return res.status(401).json({ error: '로그인이 필요합니다.' });
+    }
+
+    const reviewId = req.params.id;
+    const customerId = req.user.id;
+
+    // 이미 추천했는지 확인
+    const [existing] = await db.query(
+      'SELECT * FROM ReviewUpvotes WHERE Review_ID = ? AND Customer_ID = ?',
+      [reviewId, customerId]
+    );
+
+    if (existing.length > 0) {
+      return res.status(400).json({ error: '이미 추천한 리뷰입니다.' });
+    }
+
+    // 본인 리뷰인지 확인
+    const [reviewRows] = await db.query(
+      'SELECT Customer_ID FROM Review WHERE Review_ID = ?',
+      [reviewId]
+    );
+    if (reviewRows.length === 0) {
+      return res.status(404).json({ error: '리뷰를 찾을 수 없습니다.' });
+    }
+    if (reviewRows[0].Customer_ID === customerId) {
+      return res.status(400).json({ error: '본인 리뷰는 추천할 수 없습니다.' });
+    }
+
+    // 추천 기록 추가
+    await db.query(
+      'INSERT INTO ReviewUpvotes (Review_ID, Customer_ID) VALUES (?, ?)',
+      [reviewId, customerId]
+    );
+
+    // 리뷰의 추천수 증가
+    await db.query(
+      'UPDATE Review SET Review_upvotes = Review_upvotes + 1 WHERE Review_ID = ?',
+      [reviewId]
+    );
+
+    res.json({ success: true, message: '추천이 반영되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 리뷰 신고 API 수정
+app.post('/api/reviews/:id/report', async (req, res) => {
+  try {
+    if (!req.user || req.user.type !== 'customer') {
+      return res.status(401).json({ error: '로그인이 필요합니다.' });
+    }
+
+    const reviewId = req.params.id;
+    const customerId = req.user.id;
+
+    // 이미 신고했는지 확인
+    const [existing] = await db.query(
+      'SELECT * FROM ReviewReports WHERE Review_ID = ? AND Customer_ID = ?',
+      [reviewId, customerId]
+    );
+
+    if (existing.length > 0) {
+      return res.status(400).json({ error: '이미 신고한 리뷰입니다.' });
+    }
+
+    // 본인 리뷰인지 확인
+    const [reviewRows] = await db.query(
+      'SELECT Customer_ID FROM Review WHERE Review_ID = ?',
+      [reviewId]
+    );
+    if (reviewRows.length === 0) {
+      return res.status(404).json({ error: '리뷰를 찾을 수 없습니다.' });
+    }
+    if (reviewRows[0].Customer_ID === customerId) {
+      return res.status(400).json({ error: '본인 리뷰는 신고할 수 없습니다.' });
+    }
+
+    // 신고 기록 추가
+    await db.query(
+      'INSERT INTO ReviewReports (Review_ID, Customer_ID) VALUES (?, ?)',
+      [reviewId, customerId]
+    );
+
+    // 리뷰의 신고수 증가
+    await db.query(
+      'UPDATE Review SET Review_issues = Review_issues + 1 WHERE Review_ID = ?',
+      [reviewId]
+    );
+
+    res.json({ success: true, message: '신고가 접수되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 리뷰 신고 관리 API (직원용)
+app.get('/api/reviews/reported', async (req, res) => {
+  try {
+    if (!req.user || req.user.type !== 'staff') {
+      return res.status(401).json({ error: '권한이 없습니다.' });
+    }
+
+    const query = `
+      SELECT r.*, c.Customer_name
+      FROM Review r
+      JOIN Customer c ON r.Customer_ID = c.Customer_ID
+      WHERE r.Review_issues >= 1
+      ORDER BY r.Review_issues DESC
+    `;
+    const [reviews] = await db.query(query);
+
+    res.json({ success: true, reviews });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 리뷰 삭제 API (본인 리뷰 삭제)
+app.delete('/api/reviews/:id', async (req, res) => {
+  try {
+    if (!req.user || req.user.type !== 'customer') {
+      return res.status(401).json({ error: '로그인이 필요합니다.' });
+    }
+
+    const reviewId = req.params.id;
+    const customerId = Number(req.user.id); // 사용자 ID를 숫자로 변환
+
+    // 본인 리뷰인지 확인
+    const [reviewRows] = await db.query(
+      'SELECT Customer_ID FROM Review WHERE Review_ID = ?',
+      [reviewId]
+    );
+    if (reviewRows.length === 0) {
+      return res.status(404).json({ error: '리뷰를 찾을 수 없습니다.' });
+    }
+    const reviewCustomerId = reviewRows[0].Customer_ID;
+
+    if (reviewCustomerId !== customerId) {
+      return res.status(403).json({ error: '자신의 리뷰만 삭제할 수 있습니다.' });
+    }
+
+    await db.query('DELETE FROM Review WHERE Review_ID = ?', [reviewId]);
+
+    res.json({ success: true, message: '리뷰가 삭제되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 리뷰 수정 API (본인 리뷰 수정)
+app.put('/api/reviews/:id', async (req, res) => {
+  try {
+    if (!req.user || req.user.type !== 'customer') {
+      return res.status(401).json({ error: '로그인이 필요합니다.' });
+    }
+
+    const reviewId = req.params.id;
+    const customerId = Number(req.user.id); // 사용자 ID를 숫자로 변환
+    const { Review_title, Review_rating, Review_text } = req.body;
+
+    // 본인 리뷰인지 확인
+    const [reviewRows] = await db.query(
+      'SELECT Customer_ID FROM Review WHERE Review_ID = ?',
+      [reviewId]
+    );
+    if (reviewRows.length === 0) {
+      return res.status(404).json({ error: '리뷰를 찾을 수 없습니다.' });
+    }
+    const reviewCustomerId = reviewRows[0].Customer_ID;
+
+    if (reviewCustomerId !== customerId) {
+      return res.status(403).json({ error: '자신의 리뷰만 수정할 수 없습니다.' });
+    }
+
+    await db.query(
+      'UPDATE Review SET Review_title = ?, Review_rating = ?, Review_text = ? WHERE Review_ID = ?',
+      [Review_title, Review_rating, Review_text, reviewId]
+    );
+
+    res.json({ success: true, message: '리뷰가 수정되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 리뷰 블라인드 처리 API (직원용)
+app.post('/api/reviews/:id/blind', async (req, res) => {
+  try {
+    if (!req.user || req.user.type !== 'staff') {
+      return res.status(401).json({ error: '권한이 없습니다.' });
+    }
+
+    const reviewId = req.params.id;
+
+    // 원본 리뷰 저장 (Undo를 위해)
+    const [originalReview] = await db.query(
+      'SELECT Review_title, Review_text FROM Review WHERE Review_ID = ?',
+      [reviewId]
+    );
+    if (originalReview.length === 0) {
+      return res.status(404).json({ error: '리뷰를 찾을 수 없습니다.' });
+    }
+
+    const { Review_title, Review_text } = originalReview[0];
+
+    // 블라인드 처리
+    await db.query(
+      'UPDATE Review SET Review_title = "블라인드 처리", Review_text = "신고수 누적으로 인해 블라인드 처리되었습니다", isBlinded = 1, Original_title = ?, Original_text = ? WHERE Review_ID = ?',
+      [Review_title, Review_text, reviewId]
+    );
+
+    res.json({ success: true, message: '리뷰가 블라인드 처리되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 리뷰 블라인드 해제 API (직원용)
+app.post('/api/reviews/:id/unblind', async (req, res) => {
+  try {
+    if (!req.user || req.user.type !== 'staff') {
+      return res.status(401).json({ error: '권한이 없습니다.' });
+    }
+
+    const reviewId = req.params.id;
+
+    // 원본 리뷰 복원
+    await db.query(
+      'UPDATE Review SET Review_title = Original_title, Review_text = Original_text, isBlinded = 0, Original_title = NULL, Original_text = NULL WHERE Review_ID = ?',
+      [reviewId]
+    );
+
+    res.json({ success: true, message: '리뷰가 블라인드 해제되었습니다.' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -1193,6 +1458,7 @@ app.post('/api/books/:id/reviews', async (req, res) => {
     }
 
     const bookId = req.params.id;
+    const customerId = Number(req.user.id);
     const {
       Review_title,
       Review_rating,
@@ -1209,79 +1475,20 @@ app.post('/api/books/:id/reviews', async (req, res) => {
         Review_issues,
         staff_ID,
         Customer_ID,
-        Book_ID
-      ) VALUES (?, ?, ?, CURDATE(), 0, 0, NULL, ?, ?)
+        Book_ID,
+        isBlinded
+      ) VALUES (?, ?, ?, CURDATE(), 0, 0, NULL, ?, ?, 0)
     `;
 
     await db.query(query, [
       Review_title,
       Review_rating,
       Review_text,
-      req.user.id,
+      customerId,
       bookId
     ]);
 
     res.json({ success: true, message: '리뷰가 등록되었습니다.' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// 리뷰 추천 API
-app.post('/api/reviews/:id/upvote', async (req, res) => {
-  try {
-    if (!req.user || req.user.type !== 'customer') {
-      return res.status(401).json({ error: '로그인이 필요합니다.' });
-    }
-
-    const reviewId = req.params.id;
-
-    // 자신의 리뷰인지 확인
-    const [rows] = await db.query('SELECT Customer_ID FROM Review WHERE Review_ID = ?', [reviewId]);
-    if (rows.length === 0) {
-      return res.status(404).json({ error: '리뷰를 찾을 수 없습니다.' });
-    }
-    if (rows[0].Customer_ID === req.user.id) {
-      return res.status(400).json({ error: '자신의 리뷰는 추천할 수 없습니다.' });
-    }
-
-    const query = `
-      UPDATE Review
-      SET Review_upvotes = Review_upvotes + 1
-      WHERE Review_ID = ?
-    `;
-    await db.query(query, [reviewId]);
-    res.json({ success: true, message: '추천이 반영되었습니다.' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// 리뷰 신고 API
-app.post('/api/reviews/:id/report', async (req, res) => {
-  try {
-    if (!req.user || req.user.type !== 'customer') {
-      return res.status(401).json({ error: '로그인이 필요합니다.' });
-    }
-
-    const reviewId = req.params.id;
-
-    // 자신의 리뷰인지 확인
-    const [rows] = await db.query('SELECT Customer_ID FROM Review WHERE Review_ID = ?', [reviewId]);
-    if (rows.length === 0) {
-      return res.status(404).json({ error: '리뷰를 찾을 수 없습니다.' });
-    }
-    if (rows[0].Customer_ID === req.user.id) {
-      return res.status(400).json({ error: '자신의 리뷰는 신고할 수 없습니다.' });
-    }
-
-    const query = `
-      UPDATE Review
-      SET Review_issues = Review_issues + 1
-      WHERE Review_ID = ?
-    `;
-    await db.query(query, [reviewId]);
-    res.json({ success: true, message: '신고가 접수되었습니다.' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
