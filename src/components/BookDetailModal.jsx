@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal, Descriptions } from 'antd';
+import dayjs from 'dayjs';
 
 const BookDetailModal = ({ visible, onClose, book }) => {
   return (
@@ -12,7 +13,9 @@ const BookDetailModal = ({ visible, onClose, book }) => {
         <Descriptions.Item label="언어">{book.Book_language}</Descriptions.Item>
         <Descriptions.Item label="ISBN">{book.Book_ISBN}</Descriptions.Item>
         <Descriptions.Item label="페이지 수">{book.Book_pages}</Descriptions.Item>
-        <Descriptions.Item label="출판일">{book.Book_published_date}</Descriptions.Item>
+        <Descriptions.Item label="출판일">
+          {book.Book_published_date ? dayjs(book.Book_published_date).format('YYYY-MM-DD HH:mm:ss') : ''}
+        </Descriptions.Item>
         <Descriptions.Item label="도서 설명">{book.Book_description}</Descriptions.Item>
         <Descriptions.Item label="도서 상태">{book.Book_state}</Descriptions.Item>
       </Descriptions>

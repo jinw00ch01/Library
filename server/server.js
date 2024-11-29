@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const db = require('./db');
+const dayjs = require('dayjs');
 
 const app = express();
 
@@ -68,7 +69,7 @@ app.post('/api/customer/signup', async (req, res) => {
         Customer_birthdate,
         Customer_membership_date,
         Customer_preferences
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)
     `;
 
     await db.query(query, [
@@ -551,7 +552,7 @@ app.post('/api/contents', async (req, res) => {
     const query = `
       INSERT INTO Contents 
       (Book_ID, Contents_type, Contents_name, Contents_author, Contents_date, Contents_state, staff_ID)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, NOW(), ?, ?)
     `;
 
     await db.query(query, [
@@ -559,9 +560,8 @@ app.post('/api/contents', async (req, res) => {
       Contents_type,
       Contents_name,
       Contents_author,
-      Contents_date,
       Contents_state,
-      staff_ID
+      staff_ID,
     ]);
 
     res.json({ success: true, message: '콘텐츠가 등록되었습니다.' });
@@ -587,7 +587,7 @@ app.post('/api/media', async (req, res) => {
         Book_ID,
         media_date,
         staff_ID
-      ) VALUES (?, ?, ?, ?)
+      ) VALUES (?, ?, NOW(), ?)
     `;
 
     const [result] = await db.query(query, [
@@ -863,7 +863,7 @@ app.post('/api/supply', async (req, res) => {
     const query = `
       INSERT INTO Supply 
       (Department_ID, Supply_date, Supply_price, Book_ID, staff_ID)
-      VALUES (?, ?, ?, ?, ?)
+      VALUES (?, NOW(), ?, ?, ?)
     `;
 
     await db.query(query, [
@@ -1084,7 +1084,7 @@ app.post('/api/borrow', async (req, res) => {
     // Borrow 테이블에 새로운 레코드 추가
     const query = `
       INSERT INTO Borrow (Customer_ID, Book_ID, borrow_Date, staff_ID)
-      VALUES (?, ?, ?, ?)
+      VALUES (?, ?, NOW(), ?)
     `;
     const [result] = await db.query(query, [Customer_ID, Book_ID, borrow_Date, staff_ID]);
     const borrow_ID = result.insertId;
@@ -1144,16 +1144,15 @@ app.post('/api/return', async (req, res) => {
     // Return 테이블에 새로운 레코드 추가
     const insertReturnQuery = `
       INSERT INTO \`Return\` (ReturnLo_ID, Return_date, Return_condition, staff_ID, Customer_ID, Book_ID)
-      VALUES (?, ?, ?, ?, ?, ?)
+      VALUES (?, NOW(), ?, ?, ?, ?)
     `;
 
     const [result] = await db.query(insertReturnQuery, [
       ReturnLo_ID,
-      Return_date,
       Return_condition,
       staff_ID,
       Customer_ID,
-      Book_ID
+      Book_ID,
     ]);
 
     const Return_ID = result.insertId;
@@ -1473,7 +1472,7 @@ app.post('/api/reviews/:id/unblind', async (req, res) => {
 
     const reviewId = req.params.id;
 
-    // 원��� 리뷰 복원
+    // 원 리뷰 복원
     await db.query(
       'UPDATE Review SET Review_title = Original_title, Review_text = Original_text, isBlinded = 0, Original_title = NULL, Original_text = NULL WHERE Review_ID = ?',
       [reviewId]
@@ -1512,7 +1511,7 @@ app.post('/api/books/:id/reviews', async (req, res) => {
         Customer_ID,
         Book_ID,
         isBlinded
-      ) VALUES (?, ?, ?, CURDATE(), 0, 0, NULL, ?, ?, 0)
+      ) VALUES (?, ?, ?, NOW(), 0, 0, NULL, ?, ?, 0)
     `;
 
     await db.query(query, [

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Button, message } from 'antd';
 import { contentsService } from '../services/api';
 import styled from 'styled-components';
+import dayjs from 'dayjs';
 
 const ContentsSearch = () => {
   const [contentsList, setContentsList] = useState([]);
@@ -71,6 +72,7 @@ const ContentsSearch = () => {
       title: '행사등록일',
       dataIndex: 'Contents_date',
       key: 'Contents_date',
+      render: (text) => text ? dayjs(text).format('YYYY-MM-DD HH:mm:ss') : '',
     },
     {
       title: '상태',

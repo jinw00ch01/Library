@@ -107,7 +107,7 @@ const SupplyManagement = () => {
           <>
             <p><strong>공급명세 ID:</strong> {selectedSupply?.Supply_ID}</p>
             <p><strong>부서 ID:</strong> {selectedSupply?.Department_ID}</p>
-            <p><strong>공급일:</strong> {selectedSupply?.Supply_date}</p>
+            <p><strong>공급일자:</strong> {selectedSupply?.Supply_date ? dayjs(selectedSupply.Supply_date).format('YYYY-MM-DD HH:mm:ss') : ''}</p>
             <p><strong>금액:</strong> {selectedSupply?.Supply_price}</p>
             <p><strong>도서 ID:</strong> {selectedSupply?.Book_ID}</p>
             <p><strong>직원 ID:</strong> {selectedSupply?.staff_ID}</p>

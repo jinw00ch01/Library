@@ -113,7 +113,7 @@ const ContentsManagement = () => {
             <p><strong>유형:</strong> {selectedContent?.Contents_type}</p>
             <p><strong>콘텐츠명:</strong> {selectedContent?.Contents_name}</p>
             <p><strong>주최자:</strong> {selectedContent?.Contents_author}</p>
-            <p><strong>등록일:</strong> {selectedContent?.Contents_date}</p>
+            <p><strong>등록일:</strong> {selectedContent?.Contents_date ? dayjs(selectedContent.Contents_date).format('YYYY-MM-DD HH:mm:ss') : ''}</p>
             <p><strong>상태:</strong> {selectedContent?.Contents_state}</p>
             <Button type="primary" onClick={handleEdit}>콘텐츠 정보 수정</Button>
             <Button type="danger" onClick={handleDelete} style={{ marginLeft: '10px' }}>콘텐츠 정보 삭제</Button>

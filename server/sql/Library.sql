@@ -47,7 +47,7 @@ CREATE TABLE `Customer` (
 	`Customer_Credit`	VARCHAR(10)	DEFAULT '일반',
 	`Customer_address`	VARCHAR(255)	NULL,
 	`Customer_birthdate`	DATE	NULL,
-	`Customer_membership_date`	DATE	NULL,
+	`Customer_membership_date`	DATETIME NULL,
 	`Customer_preferences`	VARCHAR(255)	NULL,
 	PRIMARY KEY (`Customer_ID`)
 );
@@ -56,7 +56,7 @@ CREATE TABLE `Borrow` (
 	`borrow_ID`	INT	NOT NULL AUTO_INCREMENT,
 	`Customer_ID`	INT	NOT NULL,
 	`Book_ID`	INT	NOT NULL,
-	`borrow_Date`	DATE	NOT NULL,
+	`borrow_Date`	DATETIME NOT NULL,
 	`staff_ID`	INT	NOT NULL,
 	PRIMARY KEY (`borrow_ID`, `Customer_ID`, `Book_ID`),
 	INDEX `idx_customer` (`Customer_ID`),
@@ -99,7 +99,7 @@ CREATE TABLE `Cooperation` (
 CREATE TABLE `Supply` (
 	`Supply_ID`	INT	NOT NULL AUTO_INCREMENT,
 	`Department_ID`	INT	NOT NULL,
-	`Supply_date`	DATE	NOT NULL,
+	`Supply_date`	DATETIME NOT NULL,
 	`Supply_price`	DECIMAL(10, 2)	NOT NULL,
 	`Book_ID`	INT	NOT NULL,
 	`staff_ID`	INT	NOT NULL,
@@ -112,7 +112,7 @@ CREATE TABLE `Supply` (
 CREATE TABLE `Return` (
 	`Return_ID`	INT	NOT NULL AUTO_INCREMENT,
 	`ReturnLo_ID`	INT	NOT NULL,
-	`Return_date`	DATE	NULL,
+	`Return_date`	DATETIME NULL,
 	`Return_condition`	VARCHAR(10)	NULL,
 	`staff_ID`	INT	NOT NULL,
 	`Customer_ID`	INT	NOT NULL,
@@ -129,7 +129,7 @@ CREATE TABLE `Review` (
 	`Review_title`	VARCHAR(255)	NULL,
 	`Review_rating`	INT	NULL,
 	`Review_text`	VARCHAR(255)	NULL,
-	`Review_date`	DATE	NULL,
+	`Review_date`	DATETIME NULL,
 	`Review_upvotes`	INT	DEFAULT 0,
 	`Review_issues`	INT	DEFAULT 0,
 	`staff_ID`	INT	NULL,
@@ -153,7 +153,7 @@ CREATE TABLE `ReturnLo` (
 CREATE TABLE `Media` (
 	`media_ID`	INT	NOT NULL AUTO_INCREMENT,
 	`media_link`	VARCHAR(255)	NULL,
-	`media_date`	DATE	NULL,
+	`media_date`	DATETIME NULL,
 	`Book_ID`	INT	NOT NULL,
 	`staff_ID`	INT	NOT NULL,
 );
@@ -164,14 +164,14 @@ CREATE TABLE `Contents` (
 	`Contents_type`	VARCHAR(10)	NULL,
 	`Contents_name`	VARCHAR(255)	NULL,
 	`Contents_author`	VARCHAR(255)	NULL,
-	`Contents_date`	DATE	NULL,
+	`Contents_date`	DATETIME NULL,
 	`Contents_state`	VARCHAR(10)	NULL,
 	`staff_ID`	INT	NOT NULL
 );
 
 CREATE TABLE `Reservation` (
 	`Reservation_ID`	INT	NOT NULL AUTO_INCREMENT,
-	`Reservation_date`	DATE	NULL,
+	`Reservation_date`	DATETIME NULL,
 	`Reservation_number`	INT	NULL,
 	`Book_ID`	INT	NOT NULL,
 	`Customer_ID`	INT	NOT NULL

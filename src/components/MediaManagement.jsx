@@ -111,7 +111,7 @@ const MediaManagement = () => {
             <p><strong>영상자료 ID:</strong> {selectedMedia?.media_ID}</p>
             <p><strong>미디어 링크:</strong> {selectedMedia?.media_link}</p>
             <p><strong>도서 ID:</strong> {selectedMedia?.Book_ID}</p>
-            <p><strong>등록일:</strong> {selectedMedia?.media_date}</p>
+            <p><strong>등록일:</strong> {selectedMedia?.media_date ? dayjs(selectedMedia.media_date).format('YYYY-MM-DD HH:mm:ss') : ''}</p>
             <p><strong>직원 ID:</strong> {selectedMedia?.staff_ID}</p>
             <Button type="primary" onClick={handleEdit}>영상자료 정보 수정</Button>
             <Button type="danger" onClick={handleDelete} style={{ marginLeft: '10px' }}>영상자료 정보 삭제</Button>

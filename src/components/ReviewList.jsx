@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { List, Button, Modal, Form, Input, Rate, message } from 'antd';
 import { reviewService } from '../services/api';
 import styled from 'styled-components';
+import dayjs from 'dayjs';
 
 const { TextArea } = Input;
 
@@ -124,7 +125,7 @@ const ReviewList = ({ bookId }) => {
                   <Rate disabled value={item.Review_rating} />
                   <p>{item.Review_text}</p>
                   <small>
-                    {item.Review_date} 작성 | {item.Customer_name}
+                    {item.Review_date ? dayjs(item.Review_date).format('YYYY-MM-DD HH:mm:ss') : ''} 작성 | {item.Customer_name}
                   </small>
                 </div>
               }

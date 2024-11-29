@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, message } from 'antd';
 import { mediaService } from '../services/api';
 import styled from 'styled-components';
+import dayjs from 'dayjs';
 
 const MediaSearch = () => {
   const [mediaList, setMediaList] = useState([]);
@@ -47,6 +48,12 @@ const MediaSearch = () => {
           allowFullScreen
         ></iframe>
       ),
+    },
+    {
+      title: '등록일',
+      dataIndex: 'media_date',
+      key: 'media_date',
+      render: (text) => text ? dayjs(text).format('YYYY-MM-DD HH:mm:ss') : '',
     },
   ];
 

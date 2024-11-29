@@ -107,7 +107,7 @@ const UserInfoModal = ({ visible, onClose, userType, userId, onLogout }) => {
           <Descriptions.Item label="회원 등급">{userInfo.Customer_Credit}</Descriptions.Item>
           <Descriptions.Item label="주소">{userInfo.Customer_address}</Descriptions.Item>
           <Descriptions.Item label="생년월일">{userInfo.Customer_birthdate}</Descriptions.Item>
-          <Descriptions.Item label="가입일">{userInfo.Customer_membership_date}</Descriptions.Item>
+          <Descriptions.Item label="가입일">{userInfo.Customer_membership_date ? dayjs(userInfo.Customer_membership_date).format('YYYY-MM-DD HH:mm:ss') : ''}</Descriptions.Item>
         </Descriptions>
       );
     } else if (userType === 'staff') {

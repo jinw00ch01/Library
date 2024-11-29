@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table } from 'antd';
 import { loanService } from '../services/api';
+import dayjs from 'dayjs';
 
 const LoanHistory = ({ customerId }) => {
   const [loanHistory, setLoanHistory] = useState([]);
@@ -33,6 +34,18 @@ const LoanHistory = ({ customerId }) => {
       title: '반납 여부',
       dataIndex: 'Return_Status',
       key: 'Return_Status',
+    },
+    {
+      title: '대출일',
+      dataIndex: 'borrow_Date',
+      key: 'borrow_Date',
+      render: (text) => text ? dayjs(text).format('YYYY-MM-DD HH:mm:ss') : '',
+    },
+    {
+      title: '반납일',
+      dataIndex: 'Return_date',
+      key: 'Return_date',
+      render: (text) => text ? dayjs(text).format('YYYY-MM-DD HH:mm:ss') : '',
     },
   ];
 
