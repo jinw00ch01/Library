@@ -3,6 +3,7 @@ import { Table, Button, Collapse, Modal, message } from 'antd';
 import { bookService, reviewService } from '../services/api';
 import BookDetailModal from './BookDetailModal';
 import ReviewList from './ReviewList';
+import MediaModal from './MediaModal';
 import styled from 'styled-components';
 
 const { Panel } = Collapse;
@@ -12,6 +13,8 @@ const BookSearch = () => {
   const [expandedRowKeys, setExpandedRowKeys] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+  const [isMediaModalVisible, setIsMediaModalVisible] = useState(false);
+  const [selectedBookId, setSelectedBookId] = useState(null);
 
   useEffect(() => {
     fetchBooks();
@@ -38,6 +41,11 @@ const BookSearch = () => {
     setExpandedRowKeys(keys);
   };
 
+  const handleMediaClick = (bookId) => {
+    setSelectedBookId(bookId);
+    setIsMediaModalVisible(true);
+  };
+
   const columns = [
     {
       title: '도서명',
@@ -61,6 +69,7 @@ const BookSearch = () => {
         <ButtonGroup>
           <Button onClick={() => handleDetailClick(record)}>상세정보</Button>
           <Button onClick={() => handleExpandReviews(true, record)}>리뷰 및 평점 보기</Button>
+          <Button onClick={() => handleMediaClick(record.Book_ID)}>관련 영상 자료</Button>
         </ButtonGroup>
       ),
     },
@@ -85,6 +94,13 @@ const BookSearch = () => {
           visible={isDetailModalVisible}
           onClose={() => setIsDetailModalVisible(false)}
           book={selectedBook}
+        />
+      )}
+      {isMediaModalVisible && (
+        <MediaModal
+          visible={isMediaModalVisible}
+          onClose={() => setIsMediaModalVisible(false)}
+          bookId={selectedBookId}
         />
       )}
     </Container>

@@ -356,4 +356,15 @@ export const contentsService = {
     const response = await axiosInstance.delete(`/customers/${customerId}/participations/${contentsId}`);
     return response.data;
   },
-}; 
+};
+
+export const mediaService = {
+  getAllMedia: async () => {
+    const response = await axiosInstance.get('/medias');
+    return response.data;
+  },
+  getMediaByBookId: async (bookId) => {
+    const response = await axiosInstance.get(`/medias/book/${bookId}`);
+    return response.data;
+  },
+};

@@ -732,7 +732,7 @@ app.put('/api/departments/:id', async (req, res) => {
   }
 });
 
-// 부�� 삭제 API
+// 부 삭제 API
 app.delete('/api/departments/:id', async (req, res) => {
   try {
     const departmentId = req.params.id;
@@ -928,7 +928,7 @@ app.delete('/api/supplies/:id', async (req, res) => {
   }
 });
 
-// 콘텐츠 목록 조회 API 수정 (콘텐츠와 도서명 조인)
+// 콘텐츠 목록 조회 API 수정 (콘텐츠와 도서 인)
 app.get('/api/contents', async (req, res) => {
   try {
     const query = `
@@ -1027,54 +1027,44 @@ app.delete('/api/customers/:customerId/participations/:contentsId', async (req, 
   }
 });
 
-// 영상자료 목록 조회 API
+// URL 변환 함수
+const convertToEmbedUrl = (url) => {
+  const videoId = url.split('v=')[1];
+  return `https://www.youtube.com/embed/${videoId}`;
+};
+
+// 영상자료 목록 조회 API 수정
 app.get('/api/medias', async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM Media');
-    res.json({ success: true, medias: rows });
+    const query = `
+      SELECT m.*, b.Book_name
+      FROM Media m
+      JOIN Book b ON m.Book_ID = b.Book_ID
+    `;
+    const [rows] = await db.query(query);
+    // URL 변환 적용
+    const mediasWithEmbedUrl = rows.map(media => ({
+      ...media,
+      media_link: convertToEmbedUrl(media.media_link)
+    }));
+    res.json({ success: true, medias: mediasWithEmbedUrl });
   } catch (error) {
     console.error('영상자료 조회 에러:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// 영상자료 정보 수정 API
-app.put('/api/medias/:id', async (req, res) => {
+// 특정 도서의 영상자료 조회 API
+app.get('/api/medias/book/:bookId', async (req, res) => {
   try {
-    const mediaId = req.params.id;
-    const { media_link, Book_ID, media_date } = req.body;
-
+    const bookId = req.params.bookId;
     const query = `
-      UPDATE Media
-      SET
-        media_link = ?,
-        Book_ID = ?,
-        media_date = ?
-      WHERE media_ID = ?
+      SELECT * FROM Media WHERE Book_ID = ?
     `;
-
-    await db.query(query, [
-      media_link,
-      Book_ID,
-      media_date,
-      mediaId
-    ]);
-
-    res.json({ success: true, message: '영상자료 정보가 수정되었습니다.' });
+    const [rows] = await db.query(query, [bookId]);
+    res.json({ success: true, medias: rows });
   } catch (error) {
-    console.error('영상자료 수정 에러:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// 영상자료 삭제 API
-app.delete('/api/medias/:id', async (req, res) => {
-  try {
-    const mediaId = req.params.id;
-    await db.query('DELETE FROM Media WHERE media_ID = ?', [mediaId]);
-    res.json({ success: true, message: '영상자료가 삭제되었습니다.' });
-  } catch (error) {
-    console.error('영상자료 삭제 에러:', error);
+    console.error('영상자료 조회 에러:', error);
     res.status(500).json({ error: error.message });
   }
 });

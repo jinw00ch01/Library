@@ -32,6 +32,7 @@ import BookSearch from './components/BookSearch';
 import ReviewReportManagement from './components/ReviewReportManagement';
 import ContentsSearch from './components/ContentsSearch';
 import CustContParticipationList from './components/CustContParticipationList';
+import MediaSearch from './components/MediaSearch';
 
 const { Header, Content, Footer } = Layout;
 
@@ -356,6 +357,7 @@ const App = () => {
         {currentContent === 'viewLoanHistory' && <LoanHistory customerId={user?.id} />}
         {currentContent === 'searchBooks' && <BookSearch />}
         {currentContent === 'searchContents' && <ContentsSearch />}
+        {currentContent === 'searchMedia' && <MediaSearch />}
         {currentContent === 'viewParticipations' && <CustContParticipationList customerId={user?.id} />}
         {currentContent === 'manageReviews' && <ReviewReportManagement />}
       </ContentArea>
