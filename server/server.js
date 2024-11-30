@@ -1078,15 +1078,12 @@ app.post('/api/borrow', async (req, res) => {
   try {
     const { Customer_ID, Book_ID, staff_ID } = req.body;
 
-    // 현재 시간을 borrow_Date로 사용
-    const borrow_Date = new Date();
-
     // Borrow 테이블에 새로운 레코드 추가
     const query = `
       INSERT INTO Borrow (Customer_ID, Book_ID, borrow_Date, staff_ID)
       VALUES (?, ?, NOW(), ?)
     `;
-    const [result] = await db.query(query, [Customer_ID, Book_ID, borrow_Date, staff_ID]);
+    const [result] = await db.query(query, [Customer_ID, Book_ID, staff_ID]);
     const borrow_ID = result.insertId;
 
     // Borrow_log에 데이터 추가
@@ -1111,18 +1108,24 @@ app.post('/api/borrow', async (req, res) => {
   }
 });
 
-// 고객 대출 내역 조회 API
+// 고객 대출 내역 조회 API 수정
 app.get('/api/borrow-log/:customerId', async (req, res) => {
   try {
     const customerId = req.params.customerId;
 
     const query = `
       SELECT 
-        Borrow_log_ID, 
-        Book_ID, 
-        IF(Return_ID IS NULL, '아니오', '예') AS Return_Status
-      FROM Borrow_log
-      WHERE Customer_ID = ?
+        bl.Borrow_log_ID,
+        bl.Book_ID,
+        b.Book_name,
+        IF(bl.Return_ID IS NULL, '아니오', '예') AS Return_Status,
+        bo.borrow_Date,
+        r.Return_date
+      FROM Borrow_log bl
+      JOIN Borrow bo ON bl.borrow_ID = bo.borrow_ID
+      JOIN Book b ON bl.Book_ID = b.Book_ID
+      LEFT JOIN \`Return\` r ON bl.Return_ID = r.Return_ID
+      WHERE bl.Customer_ID = ?
     `;
 
     const [rows] = await db.query(query, [customerId]);
@@ -1137,9 +1140,6 @@ app.get('/api/borrow-log/:customerId', async (req, res) => {
 app.post('/api/return', async (req, res) => {
   try {
     const { ReturnLo_ID, Customer_ID, Return_condition, staff_ID, Book_ID } = req.body;
-
-    // 현재 시간을 Return_date로 사용
-    const Return_date = new Date();
 
     // Return 테이블에 새로운 레코드 추가
     const insertReturnQuery = `
@@ -1384,7 +1384,7 @@ app.delete('/api/reviews/:id', async (req, res) => {
     const reviewCustomerId = reviewRows[0].Customer_ID;
 
     if (reviewCustomerId !== customerId) {
-      return res.status(403).json({ error: '자신의 리뷰만 삭제할 수 있습니다.' });
+      return res.status(403).json({ error: '자신의 리뷰만 삭제할 수 있습���다.' });
     }
 
     await db.query('DELETE FROM Review WHERE Review_ID = ?', [reviewId]);

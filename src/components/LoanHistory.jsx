@@ -31,6 +31,11 @@ const LoanHistory = ({ customerId }) => {
       key: 'Book_ID',
     },
     {
+      title: '도서 이름',
+      dataIndex: 'Book_name',
+      key: 'Book_name',
+    },
+    {
       title: '반납 여부',
       dataIndex: 'Return_Status',
       key: 'Return_Status',
