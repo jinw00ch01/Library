@@ -36,6 +36,7 @@ import MediaSearch from './components/MediaSearch';
 import OverdueHistory from './components/OverdueHistory';
 import CustomerReviewHistory from './components/CustomerReviewHistory';
 import CustomerManagement from './components/CustomerManagement';
+import StaffManagement from './components/StaffManagement';
 
 const { Header, Content, Footer } = Layout;
 
@@ -288,26 +289,45 @@ const App = () => {
     );
   };
 
-  const staffVerticalMenu = () => (
-    <VerticalMenu>
-      <Button type="text" onClick={() => setCurrentContent('registerBook')}>신규 도서 등록</Button>
-      <Button type="text" onClick={() => setCurrentContent('manageBook')}>도서 관리</Button>
-      <Button type="text" onClick={() => setCurrentContent('registerDepartment')}>신규 부서 등록</Button>
-      <Button type="text" onClick={() => setCurrentContent('manageDepartment')}>부서 관리</Button>
-      <Button type="text" onClick={() => setCurrentContent('registerReturnLocation')}>신규 반납장소 등록</Button>
-      <Button type="text" onClick={() => setCurrentContent('manageReturnLocation')}>반납장소 관리</Button>
-      <Button type="text" onClick={() => setCurrentContent('registerCooperation')}>신규 공급업체 등록</Button>
-      <Button type="text" onClick={() => setCurrentContent('manageCooperation')}>공급업체 관리</Button>
-      <Button type="text" onClick={() => setCurrentContent('registerSupply')}>신규 공급명세 등록</Button>
-      <Button type="text" onClick={() => setCurrentContent('manageSupply')}>공급명세 관리</Button>
-      <Button type="text" onClick={() => setCurrentContent('registerContents')}>신규 콘텐츠 등록</Button>
-      <Button type="text" onClick={() => setCurrentContent('manageContents')}>콘텐츠 관리</Button>
-      <Button type="text" onClick={() => setCurrentContent('registerMedia')}>신규 영상자료 등록</Button>
-      <Button type="text" onClick={() => setCurrentContent('manageMedia')}>영상자료 관리</Button>
-      <Button type="text" onClick={() => setCurrentContent('manageCustomers')}>고객 데이터 관리</Button>
-      <Button type="text" onClick={() => setCurrentContent('manageReviews')}>리뷰 신고 관리</Button>
-    </VerticalMenu>
-  );
+  const staffVerticalMenu = () => {
+    const isManagerLevel = user?.type === 'staff' && 
+      (user?.classification === '부장' || user?.classification === '사장');
+
+    console.log('User data:', user);
+    console.log('Is manager level:', isManagerLevel);
+
+    return (
+      <VerticalMenu>
+        <Button type="text" onClick={() => setCurrentContent('registerBook')}>신규 도서 등록</Button>
+        <Button type="text" onClick={() => setCurrentContent('manageBook')}>도서 관리</Button>
+        <Button type="text" onClick={() => setCurrentContent('registerDepartment')}>신규 부서 등록</Button>
+        <Button type="text" onClick={() => setCurrentContent('manageDepartment')}>부서 관리</Button>
+        <Button type="text" onClick={() => setCurrentContent('registerReturnLocation')}>신규 반납장소 등록</Button>
+        <Button type="text" onClick={() => setCurrentContent('manageReturnLocation')}>반납장소 관리</Button>
+        <Button type="text" onClick={() => setCurrentContent('registerCooperation')}>신규 공급업체 등록</Button>
+        <Button type="text" onClick={() => setCurrentContent('manageCooperation')}>공급업체 관리</Button>
+        <Button type="text" onClick={() => setCurrentContent('registerSupply')}>신규 공급명세 등록</Button>
+        <Button type="text" onClick={() => setCurrentContent('manageSupply')}>공급명세 관리</Button>
+        <Button type="text" onClick={() => setCurrentContent('registerContents')}>신규 콘텐츠 등록</Button>
+        <Button type="text" onClick={() => setCurrentContent('manageContents')}>콘텐츠 관리</Button>
+        <Button type="text" onClick={() => setCurrentContent('registerMedia')}>신규 영상자료 등록</Button>
+        <Button type="text" onClick={() => setCurrentContent('manageMedia')}>영상자료 관리</Button>
+        <Button type="text" onClick={() => setCurrentContent('manageCustomers')}>고객 데이터 관리</Button>
+        <Button type="text" onClick={() => setCurrentContent('manageReviews')}>리뷰 신고 관리</Button>
+        {isManagerLevel && (
+          <Button 
+            type="text" 
+            onClick={() => {
+              console.log('Manage staffs clicked');
+              setCurrentContent('manageStaffs');
+            }}
+          >
+            직원 데이터 관리
+          </Button>
+        )}
+      </VerticalMenu>
+    );
+  };
 
   const customerVerticalMenu = () => (
     <VerticalMenu>
@@ -371,6 +391,7 @@ const App = () => {
           />
         )}
         {currentContent === 'manageCustomers' && <CustomerManagement />}
+        {currentContent === 'manageStaffs' && <StaffManagement />}
       </ContentArea>
 
       <Modal

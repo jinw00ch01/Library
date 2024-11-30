@@ -249,6 +249,24 @@ export const adminService = {
     const response = await axios.get(`${API_BASE_URL}/customers`);
     return response.data;
   },
+  getStaffs: async () => {
+    try {
+      const response = await axiosInstance.get('/staffs');
+      console.log('Staff data response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error in getStaffs:', error);
+      throw error;
+    }
+  },
+  updateStaff: async (staffId, data) => {
+    const response = await axiosInstance.put(`/staff/${staffId}`, data);
+    return response.data;
+  },
+  deleteStaff: async (staffId) => {
+    const response = await axiosInstance.delete(`/staff/${staffId}`);
+    return response.data;
+  },
 };
 
 export const staffService = {

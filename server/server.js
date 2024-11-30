@@ -277,26 +277,24 @@ app.get('/api/staff/:id', async (req, res) => {
 app.put('/api/staff/:id', async (req, res) => {
   try {
     const staffId = req.params.id;
-    const updateData = req.body;
+    const { staff_name, staff_classification, staff_email, staff_number } = req.body;
 
     const query = `
-      UPDATE Staff 
-      SET 
+      UPDATE Staff
+      SET
         staff_name = ?,
-        staff_number = ?,
-        staff_email = ?,
         staff_classification = ?,
-        department_ID = ?
+        staff_email = ?,
+        staff_number = ?
       WHERE staff_ID = ?
     `;
 
     await db.query(query, [
-      updateData.staff_name,
-      updateData.staff_number,
-      updateData.staff_email,
-      updateData.staff_classification,
-      updateData.department_ID,
-      staffId,
+      staff_name,
+      staff_classification,
+      staff_email,
+      staff_number,
+      staffId
     ]);
 
     res.json({ success: true, message: '직원 정보가 수정되었습니다.' });
@@ -312,7 +310,6 @@ app.delete('/api/staff/:id', async (req, res) => {
     await db.query('DELETE FROM Staff WHERE staff_ID = ?', [staffId]);
     res.json({ success: true, message: '직원 정보가 삭제되었습니다.' });
   } catch (error) {
-    console.error('직원 탈퇴 중 오류 발생:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -1093,7 +1090,7 @@ app.post('/api/borrow', async (req, res) => {
     `;
     await db.query(borrowLogQuery, [borrow_ID, Customer_ID, Book_ID]);
 
-    // 해당 도의 상태를 '대��중'으로 업데이트
+    // 해당 도의 상태를 '대중'으로 업데이트
     const updateBookQuery = `
       UPDATE Book
       SET Book_state = '대출중'
@@ -1693,6 +1690,32 @@ app.get('/api/customers', async (req, res) => {
     res.json({ success: true, customers: rows });
   } catch (error) {
     console.error('고객 목록 조회 에러:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 직원 목록 조회 API 수정
+app.get('/api/staffs', async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        s.staff_ID,
+        s.staff_name,
+        s.staff_classification,
+        s.staff_email,
+        s.staff_number,
+        s.department_ID,
+        d.department_name
+      FROM Staff s
+      LEFT JOIN Department d ON s.department_ID = d.department_ID
+      ORDER BY s.staff_ID
+    `;
+    
+    const [rows] = await db.query(query);
+    console.log('Retrieved staff data:', rows);
+    res.json({ success: true, staffs: rows });
+  } catch (error) {
+    console.error('Error fetching staff data:', error);
     res.status(500).json({ error: error.message });
   }
 });
