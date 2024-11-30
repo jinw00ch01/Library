@@ -244,7 +244,11 @@ export const adminService = {
       console.error('영상자료 삭제 API 에러:', error);
       throw error;
     }
-  }
+  },
+  getCustomers: async () => {
+    const response = await axios.get(`${API_BASE_URL}/customers`);
+    return response.data;
+  },
 };
 
 export const staffService = {

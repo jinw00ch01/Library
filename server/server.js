@@ -1093,7 +1093,7 @@ app.post('/api/borrow', async (req, res) => {
     `;
     await db.query(borrowLogQuery, [borrow_ID, Customer_ID, Book_ID]);
 
-    // 해당 도의 상태를 '대출중'으로 업데이트
+    // 해당 도의 상태를 '대��중'으로 업데이트
     const updateBookQuery = `
       UPDATE Book
       SET Book_state = '대출중'
@@ -1674,6 +1674,25 @@ app.get('/api/customers/:id/reviews', async (req, res) => {
     res.json({ success: true, reviews: rows });
   } catch (error) {
     console.error('Error fetching reviews:', error); // 에러 로깅 추가
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 고객 목록 조회 API
+app.get('/api/customers', async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        Customer_ID,
+        Customer_name,
+        Customer_Classification
+      FROM Customer
+      ORDER BY Customer_ID
+    `;
+    const [rows] = await db.query(query);
+    res.json({ success: true, customers: rows });
+  } catch (error) {
+    console.error('고객 목록 조회 에러:', error);
     res.status(500).json({ error: error.message });
   }
 });

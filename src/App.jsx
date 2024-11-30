@@ -35,6 +35,7 @@ import CustContParticipationList from './components/CustContParticipationList';
 import MediaSearch from './components/MediaSearch';
 import OverdueHistory from './components/OverdueHistory';
 import CustomerReviewHistory from './components/CustomerReviewHistory';
+import CustomerManagement from './components/CustomerManagement';
 
 const { Header, Content, Footer } = Layout;
 
@@ -369,6 +370,7 @@ const App = () => {
             key={`review-history-${user?.id}`}
           />
         )}
+        {currentContent === 'manageCustomers' && <CustomerManagement />}
       </ContentArea>
 
       <Modal
