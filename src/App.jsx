@@ -33,6 +33,7 @@ import ReviewReportManagement from './components/ReviewReportManagement';
 import ContentsSearch from './components/ContentsSearch';
 import CustContParticipationList from './components/CustContParticipationList';
 import MediaSearch from './components/MediaSearch';
+import OverdueHistory from './components/OverdueHistory';
 
 const { Header, Content, Footer } = Layout;
 
@@ -360,6 +361,7 @@ const App = () => {
         {currentContent === 'searchMedia' && <MediaSearch />}
         {currentContent === 'viewParticipations' && <CustContParticipationList customerId={user?.id} />}
         {currentContent === 'manageReviews' && <ReviewReportManagement />}
+        {currentContent === 'viewOverdueHistory' && <OverdueHistory customerId={user?.id} />}
       </ContentArea>
 
       <Modal

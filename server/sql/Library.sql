@@ -179,8 +179,8 @@ CREATE TABLE `Reservation` (
 
 CREATE TABLE `Overdue` (
 	`Overdue_ID`	INT	NOT NULL AUTO_INCREMENT,
-	`Overdue_starttime`	DATE	NULL,
-	`Overdue_endtime`	DATE	NULL
+	`Overdue_starttime`	DATETIME	NULL,
+	`Overdue_endtime`	DATETIME	NULL
 );
 
 CREATE TABLE `Current_status` (

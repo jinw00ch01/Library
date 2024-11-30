@@ -47,6 +47,16 @@ const LoanHistory = ({ customerId }) => {
       render: (text) => text ? dayjs(text).format('YYYY-MM-DD HH:mm:ss') : '',
     },
     {
+      title: '대출 만기일',
+      dataIndex: 'loan_due_date',
+      key: 'loan_due_date',
+      render: (_, record) => {
+        const borrowDate = record.borrow_Date ? dayjs(record.borrow_Date) : null;
+        const dueDate = borrowDate ? borrowDate.add(10, 'minute') : null;
+        return dueDate ? dueDate.format('YYYY-MM-DD HH:mm:ss') : '';
+      },
+    },
+    {
       title: '반납일',
       dataIndex: 'Return_date',
       key: 'Return_date',

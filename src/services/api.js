@@ -370,3 +370,10 @@ export const mediaService = {
     return response.data;
   },
 };
+
+export const overdueService = {
+  getOverdueHistory: async (customerId) => {
+    const response = await axios.get(`${API_BASE_URL}/overdue/${customerId}`);
+    return response.data;
+  },
+};

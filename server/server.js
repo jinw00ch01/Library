@@ -486,7 +486,7 @@ app.post('/api/returnLo', async (req, res) => {
 
     res.json({ 
       success: true, 
-      message: '반납 장소가 등록되었습니다.',
+      message: '반납 장소 ���되었습니다.',
       returnLoId: result.insertId 
     });
   } catch (error) {
@@ -607,7 +607,7 @@ app.post('/api/media', async (req, res) => {
   }
 });
 
-// 모든 도서의 간략 정보 조회 API
+// 모든 도서의 간략한 정보 조회 API
 app.get('/api/books/summary', async (req, res) => {
   try {
     const query = `
@@ -696,7 +696,7 @@ app.delete('/api/books/:id', async (req, res) => {
   }
 });
 
-// 부서 목록 회 API
+// 부서 목록 조회 API
 app.get('/api/departments', async (req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM Department');
@@ -932,7 +932,7 @@ app.delete('/api/supplies/:id', async (req, res) => {
   }
 });
 
-// 콘텐츠 목록 조회 API 수정 (콘텐츠와 도서 인)
+// 콘텐츠 목록 조회 API 수정 (콘텐츠와 도서 확인)
 app.get('/api/contents', async (req, res) => {
   try {
     const query = `
@@ -1093,7 +1093,7 @@ app.post('/api/borrow', async (req, res) => {
     `;
     await db.query(borrowLogQuery, [borrow_ID, Customer_ID, Book_ID]);
 
-    // 해당 도서의 상태를 '대출중'으로 업데이트
+    // 해당 도의 상태를 '대출중'으로 업데이트
     const updateBookQuery = `
       UPDATE Book
       SET Book_state = '대출중'
@@ -1130,6 +1130,63 @@ app.get('/api/borrow-log/:customerId', async (req, res) => {
 
     const [rows] = await db.query(query, [customerId]);
 
+    // 연체 처리 로직 추가
+    // 미반납 도서 중 대출 만기일이 지난 도서를 찾아 연체 처리
+    const overdueCheckQuery = `
+      SELECT 
+        bl.Borrow_log_ID, bl.borrow_ID, bl.Book_ID, bo.borrow_Date
+      FROM Borrow_log bl
+      JOIN Borrow bo ON bl.borrow_ID = bo.borrow_ID
+      WHERE bl.Customer_ID = ? AND bl.Return_ID IS NULL
+    `;
+    const [borrowLogs] = await db.query(overdueCheckQuery, [customerId]);
+
+    for (const log of borrowLogs) {
+      const borrowDate = new Date(log.borrow_Date);
+      const now = new Date();
+      const dueDate = new Date(borrowDate.getTime() + 10 * 60 * 1000); // 1시간에서 10분으로 변경 (10분 = 10 * 60 * 1000 밀리초)
+
+      if (now > dueDate) {
+        // 이미 연체 처리가 되었는지 확인
+        const overdueExistsQuery = `
+          SELECT Overdue_ID FROM Current_status WHERE Borrow_log_ID = ?
+        `;
+        const [overdueExistsRows] = await db.query(overdueExistsQuery, [log.Borrow_log_ID]);
+
+        if (overdueExistsRows.length === 0) {
+          // 연체 인스턴스 생성
+          const overdueStartTime = new Date(); // 현재 시간
+          const overdueEndTime = new Date(overdueStartTime.getTime() + 10 * 60 * 1000); // 1시간에서 10분으로 변경
+
+          // Overdue 테이블에 추가
+          const overdueInsertQuery = `
+            INSERT INTO Overdue (Overdue_starttime, Overdue_endtime)
+            VALUES (?, ?)
+          `;
+          const [overdueResult] = await db.query(overdueInsertQuery, [overdueStartTime, overdueEndTime]);
+
+          const overdueId = overdueResult.insertId;
+
+          // Current_status 테이블에 추가
+          const currentStatusInsertQuery = `
+            INSERT INTO Current_status (Borrow_log_ID, borrow_ID, Customer_ID, Book_ID, Overdue_ID)
+            VALUES (?, ?, ?, ?, ?)
+          `;
+          await db.query(currentStatusInsertQuery, [
+            log.Borrow_log_ID,
+            log.borrow_ID,
+            customerId,
+            log.Book_ID,
+            overdueId,
+          ]);
+
+          // Book_state를 '연체중'으로 변경
+          const updateBookQuery = `UPDATE Book SET Book_state = '연체중' WHERE Book_ID = ?`;
+          await db.query(updateBookQuery, [log.Book_ID]);
+        }
+      }
+    }
+
     res.json({ success: true, loans: rows });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -1141,7 +1198,7 @@ app.post('/api/return', async (req, res) => {
   try {
     const { ReturnLo_ID, Customer_ID, Return_condition, staff_ID, Book_ID } = req.body;
 
-    // Return 테이블에 새로운 레코드 추가
+    // Return 테이블�� 새로운 레코드 추가
     const insertReturnQuery = `
       INSERT INTO \`Return\` (ReturnLo_ID, Return_date, Return_condition, staff_ID, Customer_ID, Book_ID)
       VALUES (?, NOW(), ?, ?, ?, ?)
@@ -1223,7 +1280,7 @@ app.get('/api/books/:id/reviews', async (req, res) => {
     const [upvotes] = await db.query(upvoteQuery, [customerId]);
     const upvoteIds = upvotes.map((u) => u.Review_ID);
 
-    // 사용자가 이미 신고한 리 ID 목록 가져오기
+    // 사용자가 이미 신고한 리뷰 ID 목록 가져오기
     const reportQuery = `
       SELECT Review_ID FROM ReviewReports WHERE Customer_ID = ?
     `;
@@ -1308,7 +1365,7 @@ app.post('/api/reviews/:id/report', async (req, res) => {
     );
 
     if (existing.length > 0) {
-      return res.status(400).json({ error: '이미 신고한 리뷰입니다.' });
+      return res.status(400).json({ error: '이미 신고 리뷰입니다.' });
     }
 
     // 본인 리뷰인지 확인
@@ -1384,7 +1441,7 @@ app.delete('/api/reviews/:id', async (req, res) => {
     const reviewCustomerId = reviewRows[0].Customer_ID;
 
     if (reviewCustomerId !== customerId) {
-      return res.status(403).json({ error: '자신의 리뷰만 삭제할 수 있습���다.' });
+      return res.status(403).json({ error: '자신의 리뷰만 삭제할 수 있습니다.' });
     }
 
     await db.query('DELETE FROM Review WHERE Review_ID = ?', [reviewId]);
@@ -1524,6 +1581,35 @@ app.post('/api/books/:id/reviews', async (req, res) => {
 
     res.json({ success: true, message: '리뷰가 등록되었습니다.' });
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 고객 연체 내역 조회 API 수정
+app.get('/api/overdue/:customerId', async (req, res) => {
+  try {
+    const customerId = req.params.customerId;
+
+    const query = `
+      SELECT 
+        cs.Current_Status_ID, 
+        cs.Book_ID, 
+        b.Book_name,
+        o.Overdue_starttime, 
+        o.Overdue_endtime
+      FROM Current_status cs
+      JOIN Book b ON cs.Book_ID = b.Book_ID
+      JOIN Overdue o ON cs.Overdue_ID = o.Overdue_ID
+      WHERE cs.Customer_ID = ?
+      ORDER BY o.Overdue_starttime DESC
+    `;
+
+    const [rows] = await db.query(query, [customerId]);
+    console.log('연체 내역 조회 결과:', rows); // 디버깅용 로그
+
+    res.json({ success: true, overdues: rows });
+  } catch (error) {
+    console.error('연체 내역 조회 에러:', error);
     res.status(500).json({ error: error.message });
   }
 });
