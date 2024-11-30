@@ -327,9 +327,15 @@ export const reviewService = {
     const response = await axiosInstance.delete(`/reviews/${reviewId}`);
     return response.data;
   },
-  updateReview: async (reviewId, data) => {
-    const response = await axiosInstance.put(`/reviews/${reviewId}`, data);
-    return response.data;
+  updateReview: async (reviewId, reviewData) => {
+    try {
+      const response = await axiosInstance.put(`/reviews/${reviewId}`, reviewData);
+      console.log('Update Review Response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Update Review Error:', error);
+      throw error;
+    }
   },
   blindReview: async (reviewId) => {
     const response = await axiosInstance.post(`/reviews/${reviewId}/blind`);
@@ -338,6 +344,26 @@ export const reviewService = {
   unblindReview: async (reviewId) => {
     const response = await axiosInstance.post(`/reviews/${reviewId}/unblind`);
     return response.data;
+  },
+  getCustomerReviews: async (customerId) => {
+    try {
+      const response = await axiosInstance.get(`/customers/${customerId}/reviews`);
+      console.log('API Response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('API Error:', error);
+      throw error;
+    }
+  },
+  deleteReview: async (reviewId) => {
+    try {
+      const response = await axiosInstance.delete(`/reviews/${reviewId}`);
+      console.log('Delete Review Response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Delete Review Error:', error);
+      throw error;
+    }
   },
 };
 

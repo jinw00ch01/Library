@@ -34,6 +34,7 @@ import ContentsSearch from './components/ContentsSearch';
 import CustContParticipationList from './components/CustContParticipationList';
 import MediaSearch from './components/MediaSearch';
 import OverdueHistory from './components/OverdueHistory';
+import CustomerReviewHistory from './components/CustomerReviewHistory';
 
 const { Header, Content, Footer } = Layout;
 
@@ -312,7 +313,7 @@ const App = () => {
       <Button type="text" onClick={() => setCurrentContent('viewLoanHistory')}>대출 내역 조회</Button>
       <Button type="text" onClick={() => setCurrentContent('viewParticipations')}>콘텐츠 참여 내역 조회</Button>
       <Button type="text" onClick={() => setCurrentContent('viewOverdueHistory')}>연체 내역 조회</Button>
-      <Button type="text" onClick={() => setCurrentContent('viewReservations')}>예약 조회</Button>
+      <Button type="text" onClick={() => setCurrentContent('viewReviewHistory')}>리뷰 내역 조회</Button>
     </VerticalMenu>
   );
 
@@ -362,6 +363,12 @@ const App = () => {
         {currentContent === 'viewParticipations' && <CustContParticipationList customerId={user?.id} />}
         {currentContent === 'manageReviews' && <ReviewReportManagement />}
         {currentContent === 'viewOverdueHistory' && <OverdueHistory customerId={user?.id} />}
+        {currentContent === 'viewReviewHistory' && (
+          <CustomerReviewHistory 
+            customerId={user?.id} 
+            key={`review-history-${user?.id}`}
+          />
+        )}
       </ContentArea>
 
       <Modal

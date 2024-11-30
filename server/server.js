@@ -486,7 +486,7 @@ app.post('/api/returnLo', async (req, res) => {
 
     res.json({ 
       success: true, 
-      message: '반납 장소 ���되었습니다.',
+      message: '반납 장소 되었습니다.',
       returnLoId: result.insertId 
     });
   } catch (error) {
@@ -1198,7 +1198,7 @@ app.post('/api/return', async (req, res) => {
   try {
     const { ReturnLo_ID, Customer_ID, Return_condition, staff_ID, Book_ID } = req.body;
 
-    // Return 테이블�� 새로운 레코드 추가
+    // Return 테이블 새로운 레코드 추가
     const insertReturnQuery = `
       INSERT INTO \`Return\` (ReturnLo_ID, Return_date, Return_condition, staff_ID, Customer_ID, Book_ID)
       VALUES (?, NOW(), ?, ?, ?, ?)
@@ -1455,35 +1455,66 @@ app.delete('/api/reviews/:id', async (req, res) => {
 // 리뷰 수정 API (본인 리뷰 수정)
 app.put('/api/reviews/:id', async (req, res) => {
   try {
-    if (!req.user || req.user.type !== 'customer') {
-      return res.status(401).json({ error: '로그인이 필요합니다.' });
-    }
-
     const reviewId = req.params.id;
-    const customerId = Number(req.user.id); // 사용자 ID를 숫자로 변환
     const { Review_title, Review_rating, Review_text } = req.body;
 
-    // 본인 리뷰인지 확인
-    const [reviewRows] = await db.query(
+    // 리뷰 존재 여부 확인
+    const [existingReview] = await db.query(
       'SELECT Customer_ID FROM Review WHERE Review_ID = ?',
       [reviewId]
     );
-    if (reviewRows.length === 0) {
+
+    if (existingReview.length === 0) {
       return res.status(404).json({ error: '리뷰를 찾을 수 없습니다.' });
     }
-    const reviewCustomerId = reviewRows[0].Customer_ID;
 
-    if (reviewCustomerId !== customerId) {
-      return res.status(403).json({ error: '자신의 리뷰만 수정할 수 없습니다.' });
-    }
+    // 리뷰 수정
+    const query = `
+      UPDATE Review 
+      SET 
+        Review_title = ?,
+        Review_rating = ?,
+        Review_text = ?
+      WHERE Review_ID = ?
+    `;
 
-    await db.query(
-      'UPDATE Review SET Review_title = ?, Review_rating = ?, Review_text = ? WHERE Review_ID = ?',
-      [Review_title, Review_rating, Review_text, reviewId]
-    );
+    await db.query(query, [
+      Review_title,
+      Review_rating,
+      Review_text,
+      reviewId
+    ]);
 
+    console.log('Review updated successfully:', reviewId);
     res.json({ success: true, message: '리뷰가 수정되었습니다.' });
   } catch (error) {
+    console.error('Error updating review:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 리뷰 삭제 API
+app.delete('/api/reviews/:id', async (req, res) => {
+  try {
+    const reviewId = req.params.id;
+
+    // 리뷰 존재 여부 확인
+    const [existingReview] = await db.query(
+      'SELECT Customer_ID FROM Review WHERE Review_ID = ?',
+      [reviewId]
+    );
+
+    if (existingReview.length === 0) {
+      return res.status(404).json({ error: '리뷰를 찾을 수 없습니다.' });
+    }
+
+    // 리뷰 삭제
+    await db.query('DELETE FROM Review WHERE Review_ID = ?', [reviewId]);
+
+    console.log('Review deleted successfully:', reviewId);
+    res.json({ success: true, message: '리뷰가 삭제되었습니다.' });
+  } catch (error) {
+    console.error('Error deleting review:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -1610,6 +1641,39 @@ app.get('/api/overdue/:customerId', async (req, res) => {
     res.json({ success: true, overdues: rows });
   } catch (error) {
     console.error('연체 내역 조회 에러:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 고객의 리뷰 목록 조회 API
+app.get('/api/customers/:id/reviews', async (req, res) => {
+  try {
+    const customerId = req.params.id;
+    // JOIN 쿼리 수정 및 필요한 모든 필드 명시적 선택
+    const query = `
+      SELECT 
+        r.Review_ID,
+        r.Review_title,
+        r.Review_rating,
+        r.Review_text,
+        r.Review_date,
+        r.Review_upvotes,
+        r.Review_issues,
+        r.Customer_ID,
+        r.Book_ID,
+        r.isBlinded,
+        b.Book_name
+      FROM Review r
+      JOIN Book b ON r.Book_ID = b.Book_ID
+      WHERE r.Customer_ID = ?
+      ORDER BY r.Review_date DESC
+    `;
+    
+    const [rows] = await db.query(query, [customerId]);
+    console.log('Retrieved reviews:', rows); // 디버깅용 로그 추가
+    res.json({ success: true, reviews: rows });
+  } catch (error) {
+    console.error('Error fetching reviews:', error); // 에러 로깅 추가
     res.status(500).json({ error: error.message });
   }
 });
