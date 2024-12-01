@@ -10,7 +10,12 @@ const DepartmentRegistrationForm = ({ onClose }) => {
     try {
       await adminService.registerDepartment(values);
       message.success('부서가 등록되었습니다!');
-      onClose();
+      form.resetFields();
+      if (onClose) {
+        setTimeout(() => {
+          onClose();
+        }, 1000);
+      }
     } catch (error) {
       message.error('부서 등록에 실패했습니다.');
     }

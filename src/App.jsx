@@ -66,10 +66,11 @@ const RightSection = styled.div`
 `;
 
 const Logo = styled.div`
-  font-size: 20px;
+  font-size: 22px;
   font-weight: bold;
   color: #1890ff;
   margin-right: 40px;
+  letter-spacing: -0.5px;
 `;
 
 const StyledMenu = styled(Menu)`
@@ -119,8 +120,33 @@ const VerticalMenu = styled.div`
   left: 0;
   width: 200px;
   height: calc(100% - 64px);
-  background-color: #f0f2f5;
-  padding: 16px;
+  background-color: #f8f9fa;
+  padding: 20px;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+
+  button {
+    margin-bottom: 12px;
+    height: 40px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    background: white;
+    border: 1px solid #e8e8e8;
+    color: #595959;
+    text-align: left;
+    padding: 0 16px;
+    font-weight: 500;
+    
+    &:hover {
+      background: #1890ff;
+      color: white;
+      border-color: #1890ff;
+      transform: translateX(5px);
+    }
+
+    &:active {
+      background: #096dd9;
+    }
+  }
 `;
 
 const ContentArea = styled.div`
@@ -443,7 +469,9 @@ const App = () => {
 
 const WelcomeText = styled.span`
   color: #1890ff;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 15px;
+  margin-right: 16px;
 `;
 
 const ButtonGroup = styled.div`

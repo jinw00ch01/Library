@@ -55,12 +55,7 @@ const CustContParticipationList = ({ customerId }) => {
       dataIndex: 'Book_name',
       key: 'Book_name',
     },
-    {
-      title: '참여일',
-      dataIndex: 'Participation_date',
-      key: 'Participation_date',
-      render: (text) => text ? dayjs(text).format('YYYY-MM-DD HH:mm:ss') : '',
-    },
+
     {
       title: '작업',
       key: 'action',
