@@ -10,7 +10,8 @@ const ReturnLoRegistrationForm = ({ onClose }) => {
     try {
       await adminService.registerReturnLo(values);
       message.success('반납 장소가 등록되었습니다!');
-      onClose();
+      form.resetFields();
+      if (onClose) onClose();
     } catch (error) {
       message.error('반납 장소 등록에 실패했습니다.');
     }

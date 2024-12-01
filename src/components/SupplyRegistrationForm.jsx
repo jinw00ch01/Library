@@ -14,11 +14,20 @@ const SupplyRegistrationForm = ({ staffId }) => {
         Supply_price: parseFloat(values.Supply_price),
         staff_ID: staffId,
       };
+
+      if (!formData.Department_ID || !formData.Supply_date || 
+          !formData.Supply_price || !formData.Book_ID || !formData.staff_ID) {
+        throw new Error('모든 필수 필드를 입력해주세요.');
+      }
+
+      console.log('Sending supply data:', formData);
+
       await adminService.registerSupply(formData);
       message.success('공급명세가 등록되었습니다!');
       form.resetFields();
     } catch (error) {
-      message.error('공급명세 등록에 실패했습니다.');
+      console.error('Supply registration error:', error);
+      message.error(error.message || '공급명세 등록에 실패했습니다.');
     }
   };
 
@@ -38,7 +47,7 @@ const SupplyRegistrationForm = ({ staffId }) => {
           label="공급일"
           rules={[{ required: true, message: '공급일을 선택해주세요' }]}
         >
-          <DatePicker />
+          <DatePicker style={{ width: '100%' }} />
         </Form.Item>
         <Form.Item
           name="Supply_price"

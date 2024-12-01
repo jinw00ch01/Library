@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Input, DatePicker, Button, message } from 'antd';
+import { Form, Input, Button, message } from 'antd';
 import styled from 'styled-components';
 import { adminService } from '../services/api';
 
@@ -10,7 +10,6 @@ const MediaRegistrationForm = ({ staffId }) => {
     try {
       const formData = {
         ...values,
-        media_date: values.media_date.format('YYYY-MM-DD'),
         staff_ID: staffId
       };
       
@@ -43,14 +42,6 @@ const MediaRegistrationForm = ({ staffId }) => {
           rules={[{ required: true, message: '도서 ID를 입력해주세요' }]}
         >
           <Input type="number" />
-        </Form.Item>
-
-        <Form.Item
-          name="media_date"
-          label="등록일"
-          rules={[{ required: true, message: '등록일을 선택해주세요' }]}
-        >
-          <DatePicker style={{ width: '100%' }} />
         </Form.Item>
 
         <Form.Item>

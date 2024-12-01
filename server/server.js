@@ -568,29 +568,32 @@ app.post('/api/contents', async (req, res) => {
   }
 });
 
-// 영상 자료(Media) 등록 API
+// 영상 자료(Media) 등록 API 수정
 app.post('/api/media', async (req, res) => {
   try {
     const {
       media_link,
       Book_ID,
-      media_date,
       staff_ID
     } = req.body;
+
+    // 입력값 검증
+    if (!media_link || !Book_ID || !staff_ID) {
+      return res.status(400).json({ error: '필수 입력값이 누락되었습니다.' });
+    }
 
     const query = `
       INSERT INTO Media (
         media_link,
-        Book_ID,
         media_date,
+        Book_ID,
         staff_ID
-      ) VALUES (?, ?, NOW(), ?)
+      ) VALUES (?, NOW(), ?, ?)
     `;
 
     const [result] = await db.query(query, [
       media_link,
       Book_ID,
-      media_date,
       staff_ID
     ]);
 
@@ -600,6 +603,7 @@ app.post('/api/media', async (req, res) => {
       mediaId: result.insertId 
     });
   } catch (error) {
+    console.error('영상자료 등록 에러:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -793,6 +797,120 @@ app.delete('/api/returnLocations/:id', async (req, res) => {
   }
 });
 
+// 콘텐츠 수정 API
+app.put('/api/contents/:id', async (req, res) => {
+  try {
+    const contentsId = req.params.id;
+    const {
+      Book_ID,
+      Contents_type,
+      Contents_name,
+      Contents_author,
+      Contents_state
+    } = req.body;
+
+    const query = `
+      UPDATE Contents 
+      SET 
+        Book_ID = ?,
+        Contents_type = ?,
+        Contents_name = ?,
+        Contents_author = ?,
+        Contents_state = ?
+      WHERE Contents_ID = ?
+    `;
+
+    await db.query(query, [
+      Book_ID,
+      Contents_type,
+      Contents_name,
+      Contents_author,
+      Contents_state,
+      contentsId
+    ]);
+
+    res.json({ success: true, message: '콘텐츠가 수정되었습니다.' });
+  } catch (error) {
+    console.error('콘텐츠 수정 에러:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 콘텐츠 삭제 API
+app.delete('/api/contents/:id', async (req, res) => {
+  try {
+    const contentsId = req.params.id;
+
+    // 먼저 Cust_Cont 테이블의 관련 레코드 삭제
+    await db.query('DELETE FROM Cust_Cont WHERE Contents_ID = ?', [contentsId]);
+    
+    // 그 다음 Contents 테이블에서 삭제
+    await db.query('DELETE FROM Contents WHERE Contents_ID = ?', [contentsId]);
+
+    res.json({ success: true, message: '콘텐츠가 삭제되었습니다.' });
+  } catch (error) {
+    console.error('콘텐츠 삭제 에러:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 콘텐츠 수정 API
+app.put('/api/contents/:id', async (req, res) => {
+  try {
+    const contentsId = req.params.id;
+    const {
+      Book_ID,
+      Contents_type,
+      Contents_name,
+      Contents_author,
+      Contents_state
+    } = req.body;
+
+    const query = `
+      UPDATE Contents 
+      SET 
+        Book_ID = ?,
+        Contents_type = ?,
+        Contents_name = ?,
+        Contents_author = ?,
+        Contents_state = ?
+      WHERE Contents_ID = ?
+    `;
+
+    await db.query(query, [
+      Book_ID,
+      Contents_type,
+      Contents_name,
+      Contents_author,
+      Contents_state,
+      contentsId
+    ]);
+
+    res.json({ success: true, message: '콘텐츠가 수정되었습니다.' });
+  } catch (error) {
+    console.error('콘텐츠 수정 에러:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 콘텐츠 삭제 API
+app.delete('/api/contents/:id', async (req, res) => {
+  try {
+    const contentsId = req.params.id;
+
+    // 먼저 Cust_Cont 테이블의 관련 레코드 삭제
+    await db.query('DELETE FROM Cust_Cont WHERE Contents_ID = ?', [contentsId]);
+    
+    // 그 다음 Contents 테이블에서 삭제
+    await db.query('DELETE FROM Contents WHERE Contents_ID = ?', [contentsId]);
+
+    res.json({ success: true, message: '콘텐츠가 삭제되었습니다.' });
+  } catch (error) {
+    console.error('콘텐츠 삭제 에러:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // 공급업체 목록 조회 API
 app.get('/api/cooperations', async (req, res) => {
   try {
@@ -857,13 +975,27 @@ app.post('/api/supply', async (req, res) => {
       staff_ID
     } = req.body;
 
+    // 데이터 유효성 검사 추가
+    if (!Department_ID || !Supply_date || !Supply_price || !Book_ID || !staff_ID) {
+      return res.status(400).json({ error: '모든 필수 필드를 입력해주세요.' });
+    }
+
     const query = `
       INSERT INTO Supply 
       (Department_ID, Supply_date, Supply_price, Book_ID, staff_ID)
-      VALUES (?, NOW(), ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?)
     `;
 
-    await db.query(query, [
+    // 로깅 추가
+    console.log('Supply registration data:', {
+      Department_ID,
+      Supply_date,
+      Supply_price,
+      Book_ID,
+      staff_ID
+    });
+
+    const [result] = await db.query(query, [
       Department_ID,
       Supply_date,
       Supply_price,
@@ -871,10 +1003,17 @@ app.post('/api/supply', async (req, res) => {
       staff_ID
     ]);
 
-    res.json({ success: true, message: '공급명세가 등록되었습니다.' });
+    res.json({ 
+      success: true, 
+      message: '공급명세가 등록되었습니다.',
+      supplyId: result.insertId 
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: error.message });
+    console.error('Supply registration error:', error);
+    res.status(500).json({ 
+      error: error.message,
+      details: error.sqlMessage || '공급명세 등록 중 오류가 발생했습니다.' 
+    });
   }
 });
 
@@ -1716,6 +1855,40 @@ app.get('/api/staffs', async (req, res) => {
     res.json({ success: true, staffs: rows });
   } catch (error) {
     console.error('Error fetching staff data:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 영상자료 수정 API
+app.put('/api/medias/:id', async (req, res) => {
+  try {
+    const mediaId = req.params.id;
+    const { media_link, Book_ID } = req.body;
+
+    const query = `
+      UPDATE Media
+      SET media_link = ?,
+          Book_ID = ?
+      WHERE media_ID = ?
+    `;
+
+    await db.query(query, [media_link, Book_ID, mediaId]);
+    res.json({ success: true, message: '영상자료가 수정되었습니다.' });
+  } catch (error) {
+    console.error('영상자료 수정 에러:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 영상자료 삭제 API
+app.delete('/api/medias/:id', async (req, res) => {
+  try {
+    const mediaId = req.params.id;
+    const query = 'DELETE FROM Media WHERE media_ID = ?';
+    await db.query(query, [mediaId]);
+    res.json({ success: true, message: '영상자료가 삭제되었습니다.' });
+  } catch (error) {
+    console.error('영상자료 삭제 에러:', error);
     res.status(500).json({ error: error.message });
   }
 });

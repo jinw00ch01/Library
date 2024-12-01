@@ -156,6 +156,9 @@ CREATE TABLE `Media` (
 	`media_date`	DATETIME NULL,
 	`Book_ID`	INT	NOT NULL,
 	`staff_ID`	INT	NOT NULL,
+	PRIMARY KEY (`media_ID`),
+	FOREIGN KEY (`Book_ID`) REFERENCES `Book` (`Book_ID`),
+	FOREIGN KEY (`staff_ID`) REFERENCES `Staff` (`staff_ID`)
 );
 
 CREATE TABLE `Contents` (

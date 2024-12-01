@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Input, DatePicker, message } from 'antd';
+import { Table, Button, Modal, Form, Input, message } from 'antd';
 import styled from 'styled-components';
 import { adminService } from '../services/api';
 import dayjs from 'dayjs';
@@ -40,11 +40,7 @@ const MediaManagement = () => {
 
   const handleUpdate = async (values) => {
     try {
-      const updatedData = {
-        ...values,
-        media_date: values.media_date.format('YYYY-MM-DD')
-      };
-      await adminService.updateMedia(selectedMedia.media_ID, updatedData);
+      await adminService.updateMedia(selectedMedia.media_ID, values);
       message.success('영상자료 정보가 수정되었습니다.');
       setIsEditMode(false);
       setIsModalVisible(false);
@@ -84,6 +80,11 @@ const MediaManagement = () => {
       key: 'Book_ID',
     },
     {
+      title: '도서명',
+      dataIndex: 'Book_name',
+      key: 'Book_name',
+    },
+    {
       title: '작업',
       key: 'action',
       render: (_, record) => (
@@ -111,8 +112,8 @@ const MediaManagement = () => {
             <p><strong>영상자료 ID:</strong> {selectedMedia?.media_ID}</p>
             <p><strong>미디어 링크:</strong> {selectedMedia?.media_link}</p>
             <p><strong>도서 ID:</strong> {selectedMedia?.Book_ID}</p>
+            <p><strong>도서명:</strong> {selectedMedia?.Book_name}</p>
             <p><strong>등록일:</strong> {selectedMedia?.media_date ? dayjs(selectedMedia.media_date).format('YYYY-MM-DD HH:mm:ss') : ''}</p>
-            <p><strong>직원 ID:</strong> {selectedMedia?.staff_ID}</p>
             <Button type="primary" onClick={handleEdit}>영상자료 정보 수정</Button>
             <Button type="danger" onClick={handleDelete} style={{ marginLeft: '10px' }}>영상자료 정보 삭제</Button>
           </>
@@ -131,13 +132,6 @@ const MediaManagement = () => {
               rules={[{ required: true, message: '도서 ID를 입력해주세요' }]}
             >
               <Input type="number" />
-            </Form.Item>
-            <Form.Item
-              name="media_date"
-              label="등록일"
-              rules={[{ required: true, message: '등록일을 선택해주세요' }]}
-            >
-              <DatePicker style={{ width: '100%' }} />
             </Form.Item>
             <Button type="primary" htmlType="submit">저장</Button>
             <Button onClick={() => setIsEditMode(false)} style={{ marginLeft: '10px' }}>취소</Button>
