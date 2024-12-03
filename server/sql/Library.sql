@@ -172,14 +172,6 @@ CREATE TABLE `Contents` (
 	`staff_ID`	INT	NOT NULL
 );
 
-CREATE TABLE `Reservation` (
-	`Reservation_ID`	INT	NOT NULL AUTO_INCREMENT,
-	`Reservation_date`	DATETIME NULL,
-	`Reservation_number`	INT	NULL,
-	`Book_ID`	INT	NOT NULL,
-	`Customer_ID`	INT	NOT NULL
-);
-
 CREATE TABLE `Overdue` (
 	`Overdue_ID`	INT	NOT NULL AUTO_INCREMENT,
 	`Overdue_starttime`	DATETIME	NULL,
